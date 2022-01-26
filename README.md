@@ -54,5 +54,3 @@ AT?C and AT!Cn: Carrier Waveform ID
 
 AT?AL and AT!ALn: Local Address
 AT?AR and AT!ARn: Remote Address
-
-Markus har gjort en god jobb
