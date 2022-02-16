@@ -29,7 +29,7 @@ OPTION(PSET_BANDWIDTH,         "pset-bandwidth",         "Bandwidth (Hz)",      
 OPTION(CHIP_LEN_EXP,           "chip-len-exp",           "Chip Length Dyadic Exponent",             0, "0")
 OPTION(SEQUENCE_32_CHIPS,      "sequence-32-chips",      "Initial sequence of 32 chips (hex)",      0, "")
 
-OPTION(STREAM_DRIVER,          "stream-driver",          "Stream Drv (nul/alsa/pulse/raw/wav/wmm)", 0, "wav")
+OPTION(STREAM_DRIVER,          "stream-driver",          "Stream Drv (nul/alsa/pulse/raw/wav/wmm/tcp)", 0, "wav")
 OPTION(STREAM_DRIVER_ARGS,     "stream-driver-args",     "Stream Driver Arguments",                 0, "janus.wav")
 OPTION(STREAM_FS,              "stream-fs",              "Stream Sampling Frequency (Hz)",          0, "44100")
 OPTION(STREAM_FORMAT,          "stream-format",          "Stream Format",                           0, "S16")
@@ -62,6 +62,10 @@ OPTION(DETECTION_THRESHOLD,    "detection-threshold",       "Detection threshold
 OPTION(COLORED_BIT_PROB,       "colored-bit-probabilities", "Enable/Disable Colored Bit Probabilities", 0, "0")
 OPTION(CBP_HIGH2MEDIUM,        "cbp-high2medium",           "CBP High to Medium Threshold",             0, "0.2")
 OPTION(CBP_MEDIUM2LOW,         "cbp-medium2low",            "CBP Medium to Low Threshold",              0, "0.35")
+OPTION(RX_ONCE,                "rx-once",                   "Return after demodulation",                0, "0")
+OPTION(SKIP_DETECTION,         "skip-detection",            "Start demodulation without detection",     0, "0")
+OPTION(DETECTED_OFFSET,        "detected-offset",           "Offset of the first chip of the packet",   0, "0")
+OPTION(DETECTED_DOPPLER,       "detected-doppler",          "Doppler value",                            0, "1.0")
 #endif
 
 OPTION(CONFIG_FILE,            "config-file",            "Configuration file",                      0, "")

@@ -85,12 +85,12 @@ static int
 cli_options_parse_file(const char* file, char*** argv)
 {
   int i = 0;
-  char opt[512];
-  char arg[512];
+  char opt[512*4];
+  char arg[512*4];
   char* str = NULL;
   int argc = 0;
   int argc_max = 10;
-  char line[1024];
+  char line[1024*4];
   char** pargv = NULL;
   int rv;
 
@@ -103,7 +103,7 @@ cli_options_parse_file(const char* file, char*** argv)
 
   while (!feof(fd))
   {
-    if (fscanf(fd, "%1023[^\n]\n", line) != 1)
+    if (fscanf(fd, "%2049[^\n]\n", line) != 1)
     {
       break;
     }
@@ -116,7 +116,7 @@ cli_options_parse_file(const char* file, char*** argv)
       continue;
     }
 
-    rv = sscanf(str, "%511[^ ] %511[^\n]\n", opt, arg);
+    rv = sscanf(str, "%511[^ ] %2047[^\n]\n", opt, arg);
     free(str);
     if (rv != 2)
     {
@@ -277,6 +277,10 @@ cli_options_get_params(cli_options_t cli_options, janus_parameters_t params)
   params->colored_bit_prob    = atoi(cli_options->opts[COLORED_BIT_PROB].arg);
   params->cbp_high2medium     = atof(cli_options->opts[CBP_HIGH2MEDIUM].arg);
   params->cbp_medium2low      = atof(cli_options->opts[CBP_MEDIUM2LOW].arg);
+  params->rx_once             = atoi(cli_options->opts[RX_ONCE].arg);
+  params->skip_detection      = atoi(cli_options->opts[SKIP_DETECTION].arg);
+  params->detected_offset     = atoi(cli_options->opts[DETECTED_OFFSET].arg);
+  params->detected_doppler    = atof(cli_options->opts[DETECTED_DOPPLER].arg);
 #endif
 }
 
@@ -332,7 +336,6 @@ cli_options_get_packet(cli_options_t cli_options, janus_packet_t packet)
   }
 
   janus_packet_set_validity(packet, 1);
-  
   if (cli_options->opts[PACKET_APP_FIELDS].is_present)
   {
     int res;

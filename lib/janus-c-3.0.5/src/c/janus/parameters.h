@@ -93,6 +93,14 @@ struct janus_parameters
   janus_real_t cbp_high2medium;
   //! Colored Bit Probabilities: Medium to Low Probability Threshold
   janus_real_t cbp_medium2low;
+  //! Return after demodulation: enabled/disabled.
+  janus_uint8_t rx_once;
+  //! Assume, the provided signal is already synchronized on the first chip
+  janus_uint8_t skip_detection;
+  //! Signal offset of the first symbol to be demodulated
+  janus_uint32_t detected_offset;
+  //! Doppler value
+  janus_real_t detected_doppler;
 };
 
 JANUS_EXPORT janus_parameters_t

@@ -2,6 +2,7 @@ ISTREAM(null)
 ISTREAM(raw)
 ISTREAM(wav)
 ISTREAM(fifo)
+ISTREAM(tcp)
 
 #ifdef JANUS_WITH_ALSA
 ISTREAM(alsa)

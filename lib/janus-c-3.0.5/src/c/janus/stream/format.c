@@ -255,9 +255,11 @@ janus_stream_format_parse(const char* format)
     str[i] = toupper(format[i]);
 
 #define FORMAT(a)                                                       \
-  if (strcmp(str, #a) == 0) rv = JANUS_STREAM_FORMAT_ ## a; else
+  if (strcmp(str, #a) == 0) { rv = JANUS_STREAM_FORMAT_ ## a; } else
 #include "format.def"
+  {
   rv = JANUS_STREAM_FORMAT_UNKNOWN;
+  }
 
   free(str);
   return rv;

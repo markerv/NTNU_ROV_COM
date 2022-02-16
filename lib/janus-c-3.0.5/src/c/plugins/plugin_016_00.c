@@ -31,7 +31,7 @@
 #include <janus/codec/codec.h>
 #include <janus/error.h>
 
-#define STATION_ID_LABEL "Station Identifier"
+#define STATION_ID_LABEL "Station_Identifier"
 #define PSET_ID_LABEL "Parameter Set Identifier"
 #define PAYLOAD_SIZE_LABEL "Payload Size"
 #define PAYLOAD_LABEL "Payload"
@@ -136,7 +136,7 @@ app_fields_encode_cargo_size(janus_uint64_t* app_data, unsigned desired_cargo_si
 JANUS_PLUGIN_EXPORT int
 app_data_decode(janus_uint64_t app_data, janus_uint8_t app_data_size, unsigned* cargo_size, janus_app_fields_t app_fields)
 {
-  // Station Identifier (8 bits).
+  // Station_Identifier (8 bits).
   app_data_decode_station_id(app_data, app_fields);
 
   // Parameter Set Identifier (12 bits).
@@ -167,7 +167,7 @@ app_data_encode(unsigned desired_cargo_size, janus_app_fields_t app_fields, janu
     {
       if (strcmp(app_fields->fields[i].name, STATION_ID_LABEL) == 0)
       {
-        // Station Identifier (8 bits).
+        // Station_Identifier (8 bits).
         app_fields_encode_station_id(app_data, app_fields->fields + i);
       }
       else if (strcmp(app_fields->fields[i].name, PSET_ID_LABEL) == 0)

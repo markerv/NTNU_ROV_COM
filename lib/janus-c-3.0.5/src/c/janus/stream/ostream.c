@@ -73,10 +73,11 @@ janus_ostream_new(const char* driver, const char* args)
 
   // Select appropriate driver.
 #define OSTREAM(a)                                                      \
-  if (strcmp(#a, driver) == 0) rv = janus_ostream_ ## a ## _new(ostream); else
+  if (strcmp(#a, driver) == 0) { rv = janus_ostream_ ## a ## _new(ostream); } else
 #include "ostream.def"
+  {
   rv = JANUS_ERROR_STREAM;
-
+  }
   if (rv != JANUS_ERROR_NONE)
   {
     JANUS_UTILS_MEMORY_FREE(ostream);

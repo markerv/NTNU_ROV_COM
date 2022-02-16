@@ -1,0 +1,1 @@
+/usr/bin/cc -fPIC  -fPIC -nostdlib -shared  -o libplugin_000_02.so CMakeFiles/plugin_000_02.dir/src/c/plugins/plugin_000_02.c.o  libjanus.a 

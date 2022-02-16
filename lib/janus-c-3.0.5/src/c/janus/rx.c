@@ -137,6 +137,14 @@ struct janus_rx
   janus_rx_execution_state_t state;
   //! Detection threshold
   janus_real_t detection_threshold;
+  //! Return after demodulation: enabled/disabled.
+  janus_uint8_t rx_once;
+  //! Assume, the provided signal is already synchronized on the first chip
+  janus_uint8_t skip_detection;
+  //! Signal offset of the first symbol to be demodulated
+  janus_uint32_t detected_offset;
+  //! Doppler value
+  janus_real_t detected_doppler;
 };
 
 static unsigned
@@ -252,6 +260,8 @@ rx_data(janus_rx_t rx, janus_packet_t packet, janus_rx_state_t state)
 
         janus_rx_state_dump(state);
         janus_packet_dump(packet);
+        if (rx->rx_once && rx->skip_detection)
+            exit(1);
       }
 
       janus_packet_reset(packet);
@@ -306,6 +316,10 @@ janus_rx_new(janus_pset_t pset, janus_parameters_t params, janus_istream_t strea
   rx->stream = stream;
   rx->doppler_enable = params->doppler_correction;
   rx->spectrogram_enable = params->compute_channel_spectrogram;
+  rx->rx_once = params->rx_once;
+  rx->skip_detection = params->skip_detection;
+  rx->detected_offset = params->detected_offset;
+  rx->detected_doppler = params->detected_doppler;
 
   // Viterbi decoder.
   rx->viterbi = janus_viterbi_new(janus_trellis_default(), 8, DEFAULT_VITERBI_TBK_LEN);
@@ -476,6 +490,38 @@ janus_rx_execute(janus_rx_t rx, janus_packet_t packet, janus_rx_state_t state)
   janus_complex_t* bband = NULL;
   int rv = janus_istream_read(rx->stream, &bband);
 
+  if (rx->skip_detection && rx->state < STATE_PACKET) {
+      skip_size = (rx->detected_offset + 128 /* FIR delay */) / 4;
+
+      janus_utils_fifo_put(rx->bband_fifo, bband, rv * sizeof(janus_complex_t));
+      /* printf("put: %d\n", janus_utils_fifo_get_size(rx->bband_fifo)); */
+      if (janus_utils_fifo_get_size(rx->bband_fifo) < skip_size * 16) {
+          ;
+      } else {
+          /* rx->gamma = JANUS_REAL_CONST(1.0); */
+          /* rx->speed = JANUS_REAL_CONST(0.0); */
+          rx->gamma = JANUS_REAL_CONST(rx->detected_doppler);
+          rx->speed = JANUS_REAL_CONST(1540.0) * (1 - rx->gamma);
+
+          printf("gamma = %f, speed = %f, offset = %d\n", rx->gamma, rx->speed, rx->detected_offset);
+          
+          rx_bband_fifo_skip(rx, (unsigned)skip_size);
+          
+          janus_demodulator_set_cfactor(rx->dmod, rx->gamma);
+          janus_demodulator_set_index(rx->dmod, janus_chips_alignment_get_preamble_size(rx->chips_alignment));
+          
+          if (state && state->bit_prob_size != -1)
+          {
+              // Setting bit probabilities buffer, size and index.
+              state->bit_prob_size = rx->dmod_chip_count;
+              state->bit_prob = JANUS_UTILS_MEMORY_REALLOC(state->bit_prob, janus_real_t, state->bit_prob_size);
+          }
+          rx->state = STATE_PACKET;
+      }
+      return 0;
+  }
+  
+  
   if (rv <= 0)
   {
     if (rv == JANUS_ERROR_OVERRUN)
@@ -498,6 +544,9 @@ janus_rx_execute(janus_rx_t rx, janus_packet_t packet, janus_rx_state_t state)
   // Blackout.
   if (rx->state == STATE_BLACKOUT)
   {
+    if (rx->rx_once)
+        return JANUS_ERROR_STREAM;
+
     rx->blackout_downcounter -= rx_bband_fifo_skip(rx, rx->blackout_downcounter);
     if (rx->blackout_downcounter == 0)
     {

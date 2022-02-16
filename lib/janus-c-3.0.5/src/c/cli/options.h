@@ -31,7 +31,7 @@
 
 #define OPTION_LEN   30
 #define DESC_LEN     50
-#define ARG_LEN      (JANUS_MIN_PKT_SIZE + JANUS_MAX_PKT_CARGO_SIZE + 1)
+#define ARG_LEN      (2048)
 
 enum
 {

@@ -65,9 +65,11 @@ janus_istream_new(const char* driver, const char* args)
 
   // Select appropriate driver.
 #define ISTREAM(a)                                                      \
-  if (strcmp(#a, driver) == 0) rv = janus_istream_ ## a ## _new(istream); else
+  if (strcmp(#a, driver) == 0) { rv = janus_istream_ ## a ## _new(istream); } else
 #include "istream.def"
+  {
   rv = JANUS_ERROR_STREAM;
+  }
 
   if (rv != JANUS_ERROR_NONE)
   {

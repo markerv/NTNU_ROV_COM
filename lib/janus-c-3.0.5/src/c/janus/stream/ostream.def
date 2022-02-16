@@ -25,6 +25,7 @@ OSTREAM(null)
 OSTREAM(raw)
 OSTREAM(wav)
 OSTREAM(fifo)
+OSTREAM(tcp)
 
 #ifdef JANUS_WITH_ALSA
 OSTREAM(alsa)

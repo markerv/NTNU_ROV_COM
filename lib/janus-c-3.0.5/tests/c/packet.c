@@ -38,7 +38,7 @@ main(int argc, char** argv)
   janus_packet_t pkt = 0;
 
   janus_app_fields_t app_data_fields = janus_app_fields_new();
-  janus_app_fields_add_field(app_data_fields, "Station Identifier", "85");
+  janus_app_fields_add_field(app_data_fields, "Station_Identifier", "85");
   janus_app_fields_add_field(app_data_fields, "Parameter Set Identifier", "1");
 
   for (i = 0; i < desired_cargo_size; i += 10)
