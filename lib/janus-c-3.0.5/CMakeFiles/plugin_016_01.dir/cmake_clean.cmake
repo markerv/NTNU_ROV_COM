@@ -1,5 +1,6 @@
 file(REMOVE_RECURSE
   "CMakeFiles/plugin_016_01.dir/src/c/plugins/plugin_016_01.c.o"
+  "CMakeFiles/plugin_016_01.dir/src/c/plugins/plugin_016_01.c.o.d"
   "libplugin_016_01.pdb"
   "libplugin_016_01.so"
 )

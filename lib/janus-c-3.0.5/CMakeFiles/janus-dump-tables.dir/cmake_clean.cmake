@@ -1,5 +1,6 @@
 file(REMOVE_RECURSE
   "CMakeFiles/janus-dump-tables.dir/programs/dump_tables.c.o"
+  "CMakeFiles/janus-dump-tables.dir/programs/dump_tables.c.o.d"
   "janus-dump-tables"
   "janus-dump-tables.pdb"
 )

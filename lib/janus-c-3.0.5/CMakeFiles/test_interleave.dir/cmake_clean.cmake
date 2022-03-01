@@ -1,5 +1,6 @@
 file(REMOVE_RECURSE
   "CMakeFiles/test_interleave.dir/tests/c/interleaver.c.o"
+  "CMakeFiles/test_interleave.dir/tests/c/interleaver.c.o.d"
   "test_interleave"
   "test_interleave.pdb"
 )

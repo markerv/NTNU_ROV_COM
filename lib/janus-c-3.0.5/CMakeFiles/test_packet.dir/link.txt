@@ -1,1 +1,1 @@
-/usr/bin/cc  -fPIC  -rdynamic CMakeFiles/test_packet.dir/tests/c/packet.c.o  -o test_packet  libjanus.a -lrt -lpthread -lm -lnsl -ldl /usr/local/lib/libfftw3.a 
+/usr/bin/cc  -fPIC -rdynamic CMakeFiles/test_packet.dir/tests/c/packet.c.o -o test_packet  libjanus.a -lrt -lpthread -lm -lnsl -ldl /usr/local/lib/libfftw3.a 

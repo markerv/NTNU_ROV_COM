@@ -1,5 +1,6 @@
 file(REMOVE_RECURSE
   "CMakeFiles/test_hop_index.dir/tests/c/hop_index.c.o"
+  "CMakeFiles/test_hop_index.dir/tests/c/hop_index.c.o.d"
   "test_hop_index"
   "test_hop_index.pdb"
 )

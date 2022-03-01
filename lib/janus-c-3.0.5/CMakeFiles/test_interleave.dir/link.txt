@@ -1,1 +1,1 @@
-/usr/bin/cc  -fPIC  -rdynamic CMakeFiles/test_interleave.dir/tests/c/interleaver.c.o  -o test_interleave  libjanus.a -lrt -lpthread -lm -lnsl -ldl /usr/local/lib/libfftw3.a 
+/usr/bin/cc  -fPIC -rdynamic CMakeFiles/test_interleave.dir/tests/c/interleaver.c.o -o test_interleave  libjanus.a -lrt -lpthread -lm -lnsl -ldl /usr/local/lib/libfftw3.a 

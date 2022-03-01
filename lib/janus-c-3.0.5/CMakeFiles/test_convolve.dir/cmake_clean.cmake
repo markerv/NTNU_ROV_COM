@@ -1,5 +1,6 @@
 file(REMOVE_RECURSE
   "CMakeFiles/test_convolve.dir/tests/c/convolve.c.o"
+  "CMakeFiles/test_convolve.dir/tests/c/convolve.c.o.d"
   "test_convolve"
   "test_convolve.pdb"
 )
