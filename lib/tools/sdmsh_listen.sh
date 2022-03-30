@@ -1,7 +1,7 @@
 #!/bin/bash
 
-SDMSHPATH=/home/markerv/Documents/Bproject/sdmsh
-JANUSPATH=/home/markerv/Documents/Bproject/janus-c-3.0.5
+SDMSHPATH=../sdmsh/
+JANUSPATH=../janus-c-3.0.5/bin/
 
 cd $SDMSHPATH
 

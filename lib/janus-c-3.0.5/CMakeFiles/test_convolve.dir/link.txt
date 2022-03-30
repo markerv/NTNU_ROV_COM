@@ -1,1 +1,0 @@
-/usr/bin/cc  -fPIC -rdynamic CMakeFiles/test_convolve.dir/tests/c/convolve.c.o -o test_convolve  libjanus.a -lrt -lpthread -lm -lnsl -ldl /usr/local/lib/libfftw3.a 
