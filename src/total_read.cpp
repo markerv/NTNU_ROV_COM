@@ -22,6 +22,8 @@ bool r_flag = false;  //read-flag, in effect when package-data has been identifi
 
 using namespace std::chrono_literals;
 
+std::string DATAFILE = "../lib/janus-c-3.0.5/data/decodedJanus.txt";
+
 class MinimalPublisher : public rclcpp::Node
 {
 public:
@@ -79,7 +81,7 @@ std::cout << "Reading file" << "\n";
     ifstream indata; // indata is like cin
     std::string output = ""; // variable for input value
     output_log = "";
-    indata.open("log_output.txt"); // opens the file
+    indata.open(DATAFILE); // opens the file
     if(!indata) { // file couldn't be opened
         cerr << "Error: file could not be opened" << endl;
         exit(1);
