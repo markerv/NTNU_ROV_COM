@@ -256,3 +256,4 @@ lib/janus-c-3.0.5/bin/CMakeFiles/test_wake_up_tone.dir/link.txt
 lib/janus-c-3.0.5/bin/CMakeFiles/test_wake_up_tone.dir/progress.make
 lib/janus-c-3.0.5/bin/CMakeFiles/test_wake_up_tone.dir/tests/c/wakeup_tones.c.o
 lib/janus-c-3.0.5/bin/cmake_generated/janus/config.h
+lib/janus-c-3.0.5/data/janusMessage.wav

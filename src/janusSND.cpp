@@ -6,13 +6,13 @@
 using namespace std;
 
 //some paths to commonly used locations
-string JANUSPATH = "/home/markerv/Documents/Bproject/janus-c-3.0.5/";
-string SCRIPTPATH = "/home/markerv/Ros/NTNU_ROV_COM/lib/tools/";
-
+string JANUSPATH = "../lib/janus-c-3.0.5/bin/";
+string JANUS_TX_CONFIG = "txcfg_rawfile.ini";
+string SCRIPTPATH = "../lib/tools/";
 
 int janus_tx(string data) //function for sending data
 {
-    string command = SCRIPTPATH + "janus-send.sh " + data;
+    string command = "(cd " + JANUSPATH + " && ./janus-tx --config-file ../etc/" + JANUS_TX_CONFIG + " --packet-cargo '" + data + "')";
     system(command.c_str());
     return 1;
 }

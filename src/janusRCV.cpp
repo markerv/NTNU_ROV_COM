@@ -5,23 +5,24 @@
 #include<pthread.h>
 using namespace std;
 
-string JANUSPATH = "/home/markerv/Documents/Bproject/janus-c-3.0.5/";
+string JANUSPATH = "../lib/janus-c-3.0.5/bin/";
+string JANUS_TX_CONFIG = "txcfg_rawfile.ini";
+string SCRIPTPATH = "../lib/tools/";
 
-string SCRIPTPATH = "/home/markerv/Ros/NTNU_ROV_COM/lib/tools/";
 
 
 
 int janus(){
     if(system(NULL) != 0)
     {
-        string command = SCRIPTPATH + "janus-listen.sh";
+        string command = "(cd " + JANUSPATH + " && ./janus-rx --config-file ../etc/" + JANUS_TX_CONFIG + " 2> ../data/decodedJanus.txt)";
         system(command.c_str());
         cout << "Janus: Data recieved and decoded" << "\n";
         
         ifstream input;
         size_t pos;
         string line;
-        string messageFile = JANUSPATH + "myLog.txt";
+        string messageFile = JANUSPATH + "../data/decodedJanus.txt";
         input.open(messageFile);
         //cout << messageFile << "\n";
         string payloadIdentifier = "Packet         :   Payload                                    : ";
