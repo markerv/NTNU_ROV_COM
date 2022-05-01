@@ -25,6 +25,13 @@ namespace janusxsdm
         //Simplified sdm listener, will break if communication is incomplete or missing
         static int listenSimple(std::string &message);
 
+        //Basic lsitener with a timeout argument
+        static int listen(std::string &message, std::chrono::duration<double> timeout);
+
+        //Ignore this
         static int printheader();
+
+        //Does nothing for now
+        static int sdmStop();
     };
 }

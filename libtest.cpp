@@ -3,6 +3,8 @@
 #include<stdlib.h>
 #include<string.h>
 #include<chrono>
+#include<unistd.h>
+#include<signal.h>
 
 #include "lib/janusxsdm/janusxsdm.cpp"
 
@@ -13,16 +15,25 @@ std::string SDMPATH = "lib/sdmsh/";
 int JANUS_RX_PORT = 9988;
 int JANUS_TX_PORT = 9977;
 
+using namespace std::chrono_literals;
+
 int main()
 {
     
     std::cout << "Tester\n";
     janusxsdm::janus testCon("192.168.0.189", JANUSPATH, SDMPATH, 9988, 9977); //Constructing a connection object;
+    std::string returnMessage;
+    if(testCon.listen(returnMessage, 30s))
+    {
+        std::cout << "Message was: " << returnMessage << std::endl;
+    }
+    
 
+    /*
     std::string rcv;
     testCon.listenSimple(rcv);
     std::cout << rcv << std::endl;
-    /*
+    
     std::cout << "Testing sdmconf...\n";
     if(testCon.sdmconf())
     {
@@ -45,7 +56,11 @@ int main()
     }
     
     std::cout << "Tests done, exiting\n";
+    
+    testCon.printheader();
+    }
     */
-    testCon.printheader();    
+    
+
 
 }

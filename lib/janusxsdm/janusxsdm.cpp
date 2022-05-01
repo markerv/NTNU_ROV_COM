@@ -22,6 +22,9 @@
 #include<thread>
 #include<mutex>
 #include<string>
+#include<unistd.h>
+#include<sys/types.h>
+#include<sys/wait.h>
 
 #include <arpa/inet.h>
 #include <sys/socket.h>
@@ -33,7 +36,7 @@
 #define SRV_PORT 9910 
 
 
-
+using namespace std::chrono_literals;
 
 namespace janusxsdm
 {
@@ -148,7 +151,91 @@ namespace janusxsdm
 
         message = cargo; //Writing cargo to message argument
         return 1;
-    };
+    }
+    int janus::listen(std::string &message, std::chrono::duration<double> timeout)
+    {
+        
+        pid_t ch_pid = fork();
+        if(ch_pid == 0) //Child
+        {
+            setpgid(getpid(), getpid());
+            
+            std::string jcmd = "(cd " + JPATH + " && ./janus-rx  --pset-file ../etc/parameter_sets.csv --pset-id 2 --stream-driver tcp --stream-driver-args listen:127.0.0.1:" + std::to_string(RX_PORT) + " --stream-fs 250000 --stream-format S16 --verbose 1 --rx-once 2>&1)";
+            FILE* jterm = popen(jcmd.c_str(), "r");
+
+            std::string scmd = "(cd " + SPATH + " && ./sdmsh " + mIP + " -e 'rx 1024 tcp:connect:127.0.0.1:" + std::to_string(RX_PORT) + "')";
+            FILE* sterm = popen(scmd.c_str(), "r");
+        
+            //Dummyconfig for testing:
+            /*
+            //std::this_thread::sleep_for(60000ms);
+
+            std::string jcmd = "(cd " + JPATH + " && ./janus-rx  --pset-file ../etc/parameter_sets.csv --pset-id 2 --stream-driver raw --stream-driver-args ../data/janusMessage.raw --stream-fs 250000 --stream-format S16 --verbose 1 2>&1)";
+            FILE* jterm = popen(jcmd.c_str(), "r");
+            */
+            char msgbuf[4000];
+            if(fread(msgbuf, sizeof(char), 4000, jterm) >= 3999)
+            {
+                std::cout << "Warning: Read file is larger than assigned buffer, data may be incomplete" << std::endl;
+            }
+            //std::cout << "The message was:" << std::endl << msgbuf << std::endl;
+        
+            std::string msgstr = msgbuf;
+            std::string str1 = "Packet         : Cargo (ASCII)                                : \"";
+            if(msgstr.find(str1) == -1)
+            {
+                std::cout << "Error: no cargo or unable to open datastream" << std::endl;
+            }
+            else
+            {
+                size_t spos = msgstr.find(str1) + str1.length();
+                //std::cout << "Cargo found in " << spos << std::endl;
+                std::string str2 = "\"";
+                size_t epos = msgstr.find(str2, spos);
+
+                std::string cargo = msgstr.substr(spos, (epos-spos));
+                //std::cout << "Cargo is: " << cargo << std::endl;
+
+                message = cargo; //Writing cargo to message argument
+                return 1;
+            }            
+        }
+        else //Parent
+        {
+            
+            std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
+            pid_t result;
+            int status;
+            while(true)
+            {
+                result = waitpid(ch_pid, &status, WNOHANG);//Get child status
+                if(result == 0)//Child alive
+                {
+                    //Do nothing
+                }
+                else if(result == -1)//Error
+                {
+                    std::cerr << LIBNAME << ":An error occured when checking child status" << std::endl;
+                    return 0;
+                }
+                else//Child exited
+                {
+                    //std::cout << "Child has exited!\n";
+                    if(message == "")
+                    {
+                        return 0;
+                    }
+                }
+                if(std::chrono::steady_clock::now() - start >= timeout)
+                {
+                    std::cerr << "Listener timed out, killing children.." << std::endl;
+                    kill(-ch_pid, SIGINT);
+                    return 0;
+                }
+            }
+        }
+        return 0; //Return value for child processes
+    }
     int janus::printheader()
     {
         for(int i = 0; i <= 7; i++)
@@ -161,6 +248,6 @@ namespace janusxsdm
     }
     int janus::sdmStop()
     {
-        
+        return 0;
     }
 }
