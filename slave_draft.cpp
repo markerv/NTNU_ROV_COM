@@ -119,7 +119,8 @@ void response_check(string response){
         node_id = stoi(words[1]);
     }
     else if(command == "MT" && rec_mac == node_mac){
-        //her skal det sendes sensordata på en gitt form
+        string send_command = "her er det data";
+        janus_tx(send_command);
     }
     else if(command == "RA" && rec_mac == node_mac){
         spos=epos+1;
@@ -181,6 +182,13 @@ void read_node_info(){
     }
 }
 
+void network_transmission(){
+    while(true){
+        string response = janus_rx(5);
+        response_check(response);
+    }
+}
+
 void pre_transmission(){
     read_node_info();
     if(!master){
@@ -188,7 +196,7 @@ void pre_transmission(){
         read_node_info();
     }
     else{
-
+        network_transmission();
     }
 }
 
