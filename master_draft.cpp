@@ -133,7 +133,9 @@ string response_check(string response,string mac){
         spos = 10;
         epos = response.find(">>");
         string data_string = response.substr(spos, epos-spos);
-        edit_nodes_lst(false,data_string);
+        if(data_string !== "OK"){
+            edit_nodes_lst(false,data_string);
+        }
         return "";
     }
     else if (command == "NT"){
@@ -217,19 +219,17 @@ void nodes_check(){
     cout << "Check of nodes commencing.." << "\n";
     string send_command;
     for(int i = 0;i<nodes_addresses.size();i++){
-        bool state = false;                         //does the node exist yet? no
+        string response;      
         cout << "Checking node " << i+1 << ".\n";
         send_command = "//SUP-ND//"+nodes_addresses[i]+";" + master_mac + ">>";
         auto start = chrono::steady_clock::now();
         janus_tx(send_command);
-        state = receive_ack(state, nodes_addresses[i]);
+        response = janus_rx(5);
         auto time_elapsed = chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now()-start);
         if(time_elapsed>prev_time_elapsed && state){
             prev_time_elapsed = time_elapsed;
         }
-        if(!state){
-            edit_nodes_lst(true,nodes_addresses[i]);    //if the node does not respond, delete from register
-        }
+        response_check(response, nodes_addresses[i]);
     }
     cout << "All addresses tested." << "\n";
     time_slot_duration = prev_time_elapsed.count()*1.2;  //the calculated time-slot to be assigned to all nodes based on the longest response time +10%
@@ -242,7 +242,6 @@ void node_interrogation(string mac){
     janus_tx(send_command);
     string response = response_check(janus_rx(5),mac);
     nodes_addresses.push_back(mac);
-    cout<<nodes_addresses[4] << endl;
 }
 
 void master_ready(){
