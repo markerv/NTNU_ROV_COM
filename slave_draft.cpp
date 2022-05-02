@@ -90,7 +90,8 @@ void response_check(string response){
             words.push_back(tmp);
         }
         if(rec_mac == node_mac && node_alias == words[1] && min_f == words[2] && max_f == words[3]&&protocols==words[4]){
-            
+            string send_command = "//SUP-NC//OK>>";;
+            janus_tx(send_command);
         }
         else {
             string send_command = "//SUP-NC//"+node_mac+";"+node_alias+"|" +min_f+"|"+max_f+"|"+protocols+">>";

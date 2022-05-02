@@ -42,7 +42,7 @@ int janus_tx(string data){
 
 string janus_rx(int timeOut_interval){
     string response;
-    con.listen(response, 15s);
+    con.listen(response, std::chrono_literals<seconds> timeOut_interval);
     return response;
 }
 
@@ -221,7 +221,7 @@ void nodes_check(){
     for(int i = 0;i<nodes_addresses.size();i++){
         string response;      
         cout << "Checking node " << i+1 << ".\n";
-        send_command = "//SUP-ND//"+nodes_addresses[i]+";" + master_mac + ">>";
+        send_command = "//SUP-MD//"+nodes_addresses[i]+";" + master_mac + ">>";
         auto start = chrono::steady_clock::now();
         janus_tx(send_command);
         response = janus_rx(5);
