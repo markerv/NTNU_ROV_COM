@@ -17,7 +17,7 @@ namespace janusxsdm
         static int sdmconf();
 
         //Encodes message to janus in a buffer
-        static int sendSimple(std::string message);
+        void sendSimple(std::string message);
 
         //Untested: Decodes a buffered janus message
         static int decode(int16_t buf[], std::string &message);

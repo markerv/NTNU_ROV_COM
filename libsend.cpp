@@ -21,13 +21,13 @@ int main()
 {
     
     std::cout << "Tester\n";
-    janusxsdm::janus modem1("192.168.0.189", JANUSPATH, SDMPATH, 9988, 9989); //Constructing a connection object;
-    janusxsdm::janus modem2("192.168.0.198", JANUSPATH, SDMPATH, 9978, 9979); //Constructing a connection object;
-    std::string returnMessage;
-    if(modem1.listen(returnMessage, 30s))
-    {
-        std::cout << "Message was: " << returnMessage << std::endl;
-    }
+    janusxsdm::janus modem1("192.168.0.189", JANUSPATH, SDMPATH, 9007, 9045); //Constructing a connection object;
+    //modem1.sdmconf();
+    modem1.sendSimple("KUK-asscock-Nudes");
+    // modem1.sendSimple("123456789123456789FinkenerhomodaHaHA-fkjhdafkasndfaiunvsakjvndbvdrfnasouvnakjhfzlkdjhsakraiusnvkjdn");
+    // modem1.sendSimple("123456");
+    // modem1.sendSimple("");
+    // modem1.sendSimple("123456789123456789");
     /*
     std::string rcv;
     testCon.listenSimple(rcv);
