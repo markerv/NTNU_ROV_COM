@@ -389,8 +389,10 @@ namespace janusxsdm
             else if(sdm_pid == 0) //sdmsh child proc
             {
                 // std::cout << "Spawned sdm child\n";
+                char arg1[] = "sh";
+                char arg2[] = "-c";
                 std::string scmd = "(cd " + SPATH + " && ./sdmsh " + mIP + " -e 'rx 0 tcp:connect:127.0.0.1:" + std::to_string(RX_PORT) + "')";
-                char* sdm_arg[] = {"sh", "-c", (char*)scmd.c_str(), NULL};
+                char* sdm_arg[] = {arg1, arg2, (char*)scmd.c_str(), NULL};
                 execvp(sdm_arg[0], sdm_arg);
                 perror("execvp");
                 exit(0);
