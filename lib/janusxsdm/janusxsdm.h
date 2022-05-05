@@ -19,16 +19,16 @@ namespace janusxsdm
         //Encodes message to janus in a buffer
         void sendSimple(std::string message);
 
-        //Untested: Decodes a buffered janus message
+        //Does not work.. the idea is that you can call this funtion with a binary buffer and get the message payload
         static int decode(int16_t buf[], std::string &message);
 
         //Simplified sdm listener, will break if communication is incomplete or missing
         static int listenSimple(std::string &message);
 
-        //Basic lsitener with a timeout argument
+        //Listener that stops blocking after timeout
         static int listen(std::string &message, std::chrono::duration<double> timeout);
 
-        //Ignore this
+        //Begining of an atempt to a direct com with the modem
         static int printheader();
 
         //Does nothing for now

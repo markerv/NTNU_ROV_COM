@@ -88,8 +88,11 @@ namespace janusxsdm
             while((dup2(filedes[1], STDOUT_FILENO) == -1) && (errno == EINTR)) {}
             close(filedes[1]);
             close(filedes[0]);
+
+            char arg1[] = "sh";
+            char arg2[] = "-c";
             std::string scmd = "(cd " + SPATH + " && ./sdmsh " + mIP + " -e 'tx " + std::to_string(samples) + " tcp:listen:127.0.0.1:" + std::to_string(TX_PORT) + "' )";
-            char* sdm_arg[] = {"sh", "-c", (char*)scmd.c_str(), NULL};
+            char* sdm_arg[] = {arg1, arg2, (char*)scmd.c_str(), NULL};
             //FILE* sterm = popen(scmd.c_str(), "r");
             //pclose(sterm);
             execvp(sdm_arg[0], sdm_arg);
@@ -107,8 +110,10 @@ namespace janusxsdm
             }
             else if(jns_pid == 0) //janus child proc
             {
+                char arg1[] = "sh";
+                char arg2[] = "-c";
                 std::string jcmd = "(cd " + JPATH + " && ./janus-tx --pset-file ../etc/parameter_sets.csv --pset-id 2 --stream-driver tcp --stream-driver-args connect:127.0.0.1:"+std::to_string(TX_PORT)+" --stream-fs 96000 --verbose 9 --packet-cargo \""+message+"\" )";
-                char* jns_arg[] = {"sh", "-c", (char*)jcmd.c_str(), NULL};
+                char* jns_arg[] = {arg1, arg2, (char*)jcmd.c_str(), NULL};
                 execvp(jns_arg[0], jns_arg);
                 perror("execvp");
                 _exit(1);
@@ -245,12 +250,18 @@ namespace janusxsdm
         }
         else if(jns_pid == 0) //janus child process
         {
+            //std::cout << "Spawned janus child\n";
             while((dup2(filedes[1], STDOUT_FILENO) == -1) && (errno == EINTR)) {}
             close(filedes[1]);
             close(filedes[0]);
 
-            std::string jcmd = "(cd " + JPATH + " && ./janus-rx  --pset-file ../etc/parameter_sets.csv --pset-id 2 --stream-driver-args listen:127.0.0.1:" + std::to_string(RX_PORT)+" --stream-fs 96000 --rx-once";
-            char* jns_arg[] = {"sh", "-c", (char*)jcmd.c_str(), NULL};
+            char arg1[] = "sh";
+            char arg2[] = "-c";
+            //std::string jcmd = "(cd " + JPATH + " && ./janus-rx  --pset-file ../etc/parameter_sets.csv --pset-id 2 --stream-driver-args listen:127.0.0.1:" + std::to_string(RX_PORT)+" --stream-fs 96000 --rx-once 2>&1)";
+            //Dummy for testing:
+            std::string jcmd = "(cd " + JPATH + " && ./janus-rx  --pset-file ../etc/parameter_sets.csv --pset-id 2 --stream-driver raw --stream-driver-args ../data/janusMessage.raw --stream-fs 250000 --stream-format S16 --verbose 1 2>&1)";
+            //
+            char* jns_arg[] = {arg1, arg2, (char*)jcmd.c_str(), NULL};
             execvp(jns_arg[0], jns_arg);
             perror("execvp");
             _exit(1);
@@ -266,19 +277,25 @@ namespace janusxsdm
             }
             else if(sdm_pid == 0) //sdmsh child proc
             {
-                std::string scmd = "(cd " + SPATH + " && ./sdmsh " + mIP + " -e 'rx 0 tcp:connect:127.0.0.1:" + std::to_string(RX_PORT) + "')";
-                char* sdm_arg[] = {"sh", "-c", (char*)scmd.c_str(), NULL};
-                execvp(sdm_arg[0], sdm_arg);
-                perror("execvp");
-                _exit(1);
+                // std::cout << "Spawned sdm child\n";
+                // std::string scmd = "(cd " + SPATH + " && ./sdmsh " + mIP + " -e 'rx 0 tcp:connect:127.0.0.1:" + std::to_string(RX_PORT) + "')";
+                // char* sdm_arg[] = {"sh", "-c", (char*)scmd.c_str(), NULL};
+                // execvp(sdm_arg[0], sdm_arg);
+                // perror("execvp");
+                // _exit(1);
             }
             else
             {
-                char buffer[4096];
+                char buffer[1];
                 std::string janusFrame;
                 while(waitpid(jns_pid, 0, WNOHANG) != 0) //While janus child process is "alive"
                 {
+                    if(janusFrame.find("peak") != std::string::npos) //To catch EOF before read blocks
+                    {
+                        break;
+                    }
                     ssize_t count = read(filedes[0], buffer, sizeof(buffer));
+                    //std::cout << buffer;
                     if(count == -1)
                     {
                         if(errno == EINTR)
@@ -299,127 +316,186 @@ namespace janusxsdm
                     else
                     {
                         janusFrame += buffer;
-                        
-                        
                     }
+                    //std::cout << "Buffering..\n";
                 }
+                //std::cout << janusFrame << std::endl;
+                //std::cout << "Done rcv\n";
                 std::string idStr = "Packet         : Cargo (ASCII)                                : \"";
                 std::string endStr = "\"";
 
                 size_t spos = janusFrame.find(idStr) + idStr.length();
-                std::cout << "Cargo found in " << spos << std::endl;
+                //std::cout << "Cargo found in " << spos << std::endl;
 
                 size_t epos = janusFrame.find(endStr, spos);
 
-                std::string cargo = msgstr.substr(spos, epos-spos);
-                std::cout << "Cargo is: " << cargo << std::endl;
+                std::string cargo = janusFrame.substr(spos, epos-spos);
+                //std::cout << "Cargo is: " << cargo << std::endl;
+
 
                 message = cargo; //Writing cargo to message argument
+                //Terminating children
+                kill(jns_pid, SIGTSTP);
+                kill(sdm_pid, SIGTSTP);
+                close(filedes[1]);
+                close(filedes[0]);
                 return 1;
             }
             return 0;
         }
-        
-        //Dummyconfig for testing:
-        /*
-        std::string jcmd = "(cd " + JPATH + " && ./janus-rx  --pset-file ../etc/parameter_sets.csv --pset-id 2 --stream-driver raw --stream-driver-args ../data/janusMessage.raw --stream-fs 250000 --stream-format S16 --verbose 1 2>&1)";
-        FILE* jterm = popen(jcmd.c_str(), "r");
-        */
     }
     int janus::listen(std::string &message, std::chrono::duration<double> timeout)
     {
-        
-        pid_t ch_pid = fork();
-        if(ch_pid == 0) //Child
+        int filedes[2];
+        if(pipe(filedes) == -1) //Creating pipe
         {
-            setpgid(getpid(), getpid());
+            perror("pipe");
+            exit(1);
+        }
 
-            pid_t chch_pid = fork();
-            if(chch_pid == 0)//child of child
+        pid_t jns_pid = fork(); //Creating suprocess for janus-rx
+        if(jns_pid == -1) //Error
+        {
+            perror("fork");
+            exit(1);
+        }
+        else if(jns_pid == 0) //janus child process
+        {
+            //std::cout << "Spawned janus child\n";
+            while((dup2(filedes[1], STDOUT_FILENO) == -1) && (errno == EINTR)) {}
+            close(filedes[1]);
+            close(filedes[0]);
+
+            char arg1[] = "sh";
+            char arg2[] = "-c";
+            std::string jcmd = "(cd " + JPATH + " && ./janus-rx  --pset-file ../etc/parameter_sets.csv --pset-id 2 --stream-driver-args listen:127.0.0.1:" + std::to_string(RX_PORT)+" --stream-fs 96000 --rx-once 2>&1)";
+            //Dummy for testing:
+            //std::string jcmd = "(cd " + JPATH + " && ./janus-rx  --pset-file ../etc/parameter_sets.csv --pset-id 2 --stream-driver raw --stream-driver-args ../data/janusMessage.raw --stream-fs 250000 --stream-format S16 --verbose 1 2>&1)";
+            //
+            char* jns_arg[] = {arg1, arg2, (char*)jcmd.c_str(), NULL};
+            execvp(jns_arg[0], jns_arg);
+            perror("execvp");
+            _exit(1);
+        }
+        else //Parent process
+        {
+            std::this_thread::sleep_for(500ms); //Delay needed for janus to establish tcp listener
+            pid_t sdm_pid = fork();
+            if(sdm_pid == -1) //Error
             {
-                std::cout << "Establishing sdmsh\n";
-                std::string scmd = "(cd " + SPATH + " && ./sdmsh " + mIP + " -e 'rx 250000 tcp:connect:127.0.0.1:" + std::to_string(RX_PORT) + "')";
-                FILE* sterm = popen(scmd.c_str(), "r");
-                std::cout << "Waiting for response\n";
-                pclose(sterm);
-                return 0;
+                perror("fork");
+                exit(1);
+            }
+            else if(sdm_pid == 0) //sdmsh child proc
+            {
+                // std::cout << "Spawned sdm child\n";
+                std::string scmd = "(cd " + SPATH + " && ./sdmsh " + mIP + " -e 'rx 0 tcp:connect:127.0.0.1:" + std::to_string(RX_PORT) + "')";
+                char* sdm_arg[] = {"sh", "-c", (char*)scmd.c_str(), NULL};
+                execvp(sdm_arg[0], sdm_arg);
+                perror("execvp");
+                exit(0);
             }
             else
             {
-                std::string jcmd = "(cd " + JPATH + " && ./janus-rx --pset-file ../etc/parameter_sets.csv --pset-id 2 --stream-driver tcp --stream-driver-args listen:127.0.0.1:"+std::to_string(RX_PORT)+" --stream-fs 96000 --verbose 9 --rx-once 1 2>&1)";
-                FILE* jterm = popen(jcmd.c_str(), "r");   
-
-                char msgbuf[4000];
-                std::string msgstr;
-                std::string str1 = "Packet         : Cargo (ASCII)                                : \"";
-                std::cout << "Waiting for message\n";
-                while(true)
+                pid_t rd_pid = fork();
+                if(rd_pid == -1) //Error
                 {
-                    fread(msgbuf, sizeof(char), 4000, jterm);
-                    msgstr = msgbuf;
-                    if(msgstr.find(str1) != std::string::npos)
+                    perror("fork");
+                    exit(1);
+                }
+                else if(rd_pid == 0)
+                {
+                    char buffer[1];
+                    std::string janusFrame;
+                    while(true) //While janus child process is "alive"
                     {
-                        std::cout << "Message recv\n";
-                        break;
+                        if(janusFrame.find("peak") != std::string::npos) //To catch EOF before read blocks
+                        {
+                            break;
+                        }
+                        ssize_t count = read(filedes[0], buffer, sizeof(buffer));
+                        //std::cout << buffer;
+                        if(count == -1)
+                        {
+                            if(errno == EINTR)
+                            {
+                                continue;
+                            }
+                            else
+                            {
+                                perror("read");
+                                exit(1);
+                            }
+                        }
+                        else if(count == 0)
+                        {
+                            std::cout << "EOF reached\n";
+                            break;
+                        }
+                        else
+                        {
+                            janusFrame += buffer;
+                        }
+                        //std::cout << "Buffering..\n";
                     }
-                    else
-                    {
-                        //std::cout << "NAN\n";
-                    }
-                    std::this_thread::sleep_for(100ms);
-                }
-            
-                std::cout << "The message was:" << std::endl << msgbuf << std::endl;
-        
-            
-            
-                size_t spos = msgstr.find(str1) + str1.length();
-                //std::cout << "Cargo found in " << spos << std::endl;
-                std::string str2 = "\"";
-                size_t epos = msgstr.find(str2, spos);
+                    //std::cout << janusFrame << std::endl;
+                    //std::cout << "Done rcv\n";
+                    std::string idStr = "Packet         : Cargo (ASCII)                                : \"";
+                    std::string endStr = "\"";
 
-                std::string cargo = msgstr.substr(spos, (epos-spos));
-                //std::cout << "Cargo is: " << cargo << std::endl;
+                    size_t spos = janusFrame.find(idStr) + idStr.length();
+                    //std::cout << "Cargo found in " << spos << std::endl;
 
-                message = cargo; //Writing cargo to message argument
-                return 1;
-            }            
-        }
-        else //Parent
-        {
-            
-            std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
-            pid_t result;
-            int status;
-            while(true)
-            {
-                result = waitpid(ch_pid, &status, WNOHANG);//Get child status
-                if(result == 0)//Child alive
-                {
-                    //Do nothing
+                    size_t epos = janusFrame.find(endStr, spos);
+
+                    std::string cargo = janusFrame.substr(spos, epos-spos);
+                    //std::cout << "Cargo is: " << cargo << std::endl;
+
+                    message = cargo; //Writing cargo to message argument
+                    //Terminating children
+                    kill(jns_pid, SIGTSTP);
+                    kill(sdm_pid, SIGTSTP);
+                    close(filedes[1]);
+                    close(filedes[0]);
+                    return 1;
                 }
-                else if(result == -1)//Error
+                else
                 {
-                    std::cerr << LIBNAME << ":An error occured when checking child status" << std::endl;
-                    return 0;
-                }
-                else//Child exited
-                {
-                    //std::cout << "Child has exited!\n";
-                    if(message == "")
+                    std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
+                    std::chrono::steady_clock::time_point now;
+                    pid_t rdStat;
+                    while(true)
                     {
-                        return 0;
+                        now = std::chrono::steady_clock::now();
+                        if(std::chrono::duration<double>(now - start).count() >= timeout.count())
+                        {
+                            std::cout << "Timeout reached, terminating!\n";
+                            kill(jns_pid, SIGTSTP);
+                            kill(sdm_pid, SIGTSTP);
+                            kill(rd_pid, SIGTSTP);
+                            close(filedes[1]);
+                            close(filedes[0]);
+                            return 0;
+                        }
+                        rdStat = waitpid(rd_pid, 0, WNOHANG);
+                        if(rdStat == -1)
+                        {
+                            perror("waitpid");
+                            exit(1);
+                        }
+                        else if(rdStat == rd_pid)
+                        {
+                            //std::cout << "Reader done\n";
+                            exit(0);
+                        }
+                        //std::cout << "Timer_waitpid: " << waitpid(rd_pid, 0, WNOHANG) << "\n";
+                        //else if(waitpid(jns_pid, 0, WNOHANG) != 0) {}
+                        
                     }
-                }
-                if(std::chrono::steady_clock::now() - start >= timeout)
-                {
-                    std::cerr << "Listener timed out, killing children.." << std::endl;
-                    kill(-ch_pid, SIGINT);
-                    return 0;
                 }
             }
+            return 0;
         }
-        return 0; //Return value for child processes
     }
     int janus::printheader()
     {
