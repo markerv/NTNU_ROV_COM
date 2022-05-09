@@ -8,7 +8,7 @@
 
 #include "lib/janusxsdm/janusxsdm.cpp"
 
-//Globals
+//Global
 std::string JANUSPATH = "lib/janus-c-3.0.5/bin/";
 std::string SDMPATH = "lib/sdmsh/";
 
@@ -21,21 +21,21 @@ int main()
 {
     
     std::cout << "Tester\n";
-    janusxsdm::janus modem2("192.168.0.198", JANUSPATH, SDMPATH, 9954, 9955); //Constructing a connection object;
+    janusxsdm::janus modem2("192.168.0.199", JANUSPATH, SDMPATH, 9998, 9955); //Constructing a connection object;
     std::string returnMessage;
     //modem2.sdmconf();
     //std::this_thread::sleep_for(1000ms);
-    if(modem2.listen(returnMessage, 4s))
+    if(modem2.listen(returnMessage, 10s))
     {
         std::cout << "Message was: " << returnMessage << std::endl;
     }
-    std::cout << "I swear i did not hit her, i swear.. i did noot..\n";
-    std::cout << "ohh, hi Mark!\n";
+    //std::cout << "I swear i did not hit her, i swear.. i did noot..\n";
+    //std::cout << "ohh, hi Mark!\n";
     
     /*
     std::string rcv;
     testCon.listenSimple(rcv);
-    std::cout << rcv << std::endl;    
+    std::cout << rcv << std::endl;
     std::cout << "Testing sdmconf...\n";
     if(testCon.sdmconf())
     {

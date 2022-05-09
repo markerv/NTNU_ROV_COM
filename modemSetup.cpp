@@ -30,6 +30,4 @@ int main()
     modem1.setPreamble();
     std::this_thread::sleep_for(500ms);
     modem2.setPreamble();
-
-
 }
