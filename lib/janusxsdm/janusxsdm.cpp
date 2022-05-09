@@ -52,9 +52,19 @@ namespace janusxsdm
     }
     int janus::sdmconf()
     {
+        //Could also add setting modem in "PHY" state here (nc $IP PORT +++ATP)
         std::string sdmcommand = "(cd " + SPATH + " && ./sdmsh " + mIP + " -e 'stop;config 30 0 3 0')";
         FILE* terminal = popen(sdmcommand.c_str(), "r");
         pclose(terminal);
+        std::cout << "Modem with IP: " << mIP << " configured." << std::endl;
+        return 1;
+    }
+    int janus::setPreamble()
+    {
+        std::string sdmcommand = "(cd " + SPATH + " && ./sdmsh " + mIP + " -e 'stop;ref preamble.raw')";
+        FILE* terminal = popen(sdmcommand.c_str(), "r");
+        pclose(terminal);
+        std::cout << "Preamble set for modem with IP: " << mIP << std::endl;
         return 1;
     }
     void janus::sendSimple(std::string message)
@@ -69,7 +79,6 @@ namespace janusxsdm
         {
             samples = (message.length() * 4800 + 60600); 
         }
-
         int filedes[2];
         if(pipe(filedes) == -1) //Creating a pipe
         {

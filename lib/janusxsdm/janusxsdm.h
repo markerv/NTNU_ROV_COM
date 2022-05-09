@@ -16,6 +16,9 @@ namespace janusxsdm
         //Setting correct config on sdm
         static int sdmconf();
 
+        //Sets the correct preamble for janus-data
+        static int setPreamble();
+
         //Encodes message to janus in a buffer
         void sendSimple(std::string message);
 
