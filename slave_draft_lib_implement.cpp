@@ -30,20 +30,21 @@ string min_f;
 string max_f;
 string protocols;
 
-janusxsdm::janus modem("192.168.0.198", JANUSPATH, SDMPATH, 9954, 9955); //Constructing a connection object;
+janusxsdm::janus modem("192.168.0.199", JANUSPATH, SDMPATH, 9926, 9916); //Constructing a connection object;
 
 string janus_rx(int timeOut_interval){
     string response;
     std::chrono::duration<double> t;
     t = std::chrono::duration<double> {timeOut_interval};
     if(modem.listen(response, t)){
-        cout << "was" << endl;
+        cout << "Cargo: " << response << endl;
     }
     return response;
 }
 
 int janus_tx(string command){
     cout << "Sending " << command << endl;
+    std::this_thread::sleep_for(1000ms);
     modem.sendSimple(command);
     return 1;
 }
@@ -200,11 +201,12 @@ void network_transmission(){
 void pre_transmission(){
     read_node_info();
     while(!master){
-        response_check(janus_rx(15));
+        response_check(janus_rx(7));
         read_node_info();
     }
     while(!check_done){
-        response_check(janus_rx(15));
+        response_check(janus_rx(7));
+        std::this_thread::sleep_for(1000ms);
     }
     while(!config){
         response_check(janus_rx(time_slot_duration));
@@ -221,6 +223,10 @@ int transmission(){
 }
 
 int main(){
+    modem.sdmconf();
+    std::this_thread::sleep_for(1000ms);
+    modem.setPreamble();
+    std::this_thread::sleep_for(500ms);
     transmission();
     return 1;
 }

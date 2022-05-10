@@ -18,8 +18,9 @@ int time_slot_duration;             //The duration of each time slot calculated 
 vector<string> nodes_addresses;     //Includes only the MAC-addresses fetched from content-array
 vector<vector<string>> content;     //Includes the whole csv-file, 
 bool check_complete=false;
+bool node_check;
 string fname = "info_files/nodes_lst.csv";
-string master_mac = "somethingsomething";
+string master_mac = "48:0f:cf:01:f7:fc";
 
 string data1;       //declarations for sensor data received from nodes
 string data2;
@@ -30,12 +31,13 @@ string data4;
 std::string JANUSPATH = "lib/janus-c-3.0.5/bin/";
 std::string SDMPATH = "lib/sdmsh/";
 
-int JANUS_RX_PORT = 9988;
-int JANUS_TX_PORT = 9977;
+int JANUS_RX_PORT = 9970;
+int JANUS_TX_PORT = 9960;
 
 janusxsdm::janus modem("192.168.0.189",JANUSPATH,SDMPATH, JANUS_RX_PORT,JANUS_TX_PORT);
 
 int janus_tx(string data){
+    std::this_thread::sleep_for(1000ms);
     modem.sendSimple(data);
     return 1;
 }
@@ -45,6 +47,7 @@ string janus_rx(int timeOut_interval){
     t = std::chrono::duration<double> {timeOut_interval};
     string response;
     modem.listen(response, t);
+    std::cout << response << std::endl;
     return response;
 }
 
@@ -91,7 +94,7 @@ void edit_nodes_lst(bool remove, string node){
         // contents of path must be copied to a temp file then
         // renamed back to the path file
         ofstream temp;
-        temp.open("temp.csv");
+        temp.open("info_files/temp.csv");
 
         while (getline(fin, line)) {
             string token = line.substr(0, line.find(","));      //isolate first word of the current line
@@ -103,9 +106,9 @@ void edit_nodes_lst(bool remove, string node){
         temp.close();
         fin.close();
         // required conversion for remove and rename functions
-        const char * p = "nodes_lst.csv";
+        const char * p = "info_files/nodes_lst.csv";
         std::remove(p);
-        rename("temp.csv", p);
+        rename("info_files/temp.csv", p);
         cout << "Removing " << node << " from records.." << "\n";
     }
 }
@@ -125,6 +128,7 @@ string response_check(string response,string mac){
         spos = 10;
         epos = response.find(">>");
         string data_string = response.substr(spos, epos-spos);
+        node_check = true;
         if(data_string != "OK"){
             edit_nodes_lst(false,data_string);
         }
@@ -212,17 +216,21 @@ void nodes_check(){
     cout << "Check of nodes commencing.." << "\n";
     string send_command;
     for(int i = 0;i<nodes_addresses.size();i++){
+        node_check = false;
         string response;      
         cout << "Checking node " << i+1 << ".\n";
         send_command = "//SUP-MD//"+nodes_addresses[i]+";" + master_mac + ">>";
         auto start = chrono::steady_clock::now();
         janus_tx(send_command);
-        response = janus_rx(15);
+        response = janus_rx(7);
         auto time_elapsed = chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now()-start);
         if(time_elapsed>prev_time_elapsed){
             prev_time_elapsed = time_elapsed;
         }
         response_check(response, nodes_addresses[i]);
+        if(!node_check){
+            edit_nodes_lst(true,nodes_addresses[i]);
+        }
     }
     cout << "All addresses tested." << "\n";
     time_slot_duration = prev_time_elapsed.count()*1.2;  //the calculated time-slot to be assigned to all nodes based on the longest response time +20%
@@ -233,7 +241,7 @@ void nodes_check(){
 void node_interrogation(string mac){
     // string send_command = "//SUP-RA//"+mac+";"+master_mac+">>";
     // janus_tx(send_command);
-    string response = response_check(janus_rx(5),mac);
+    string response = response_check(janus_rx(7),mac);
     nodes_addresses.push_back(mac);
 }
 
@@ -249,6 +257,10 @@ void master_ready(){
 }
 
 int main(){
+    modem.sdmconf();
+    std::this_thread::sleep_for(1000ms);
+    modem.setPreamble();
+    std::this_thread::sleep_for(500ms);
     cout << "Master commencing.." << "\n";
     read_nodes_lst();
     nodes_check();
