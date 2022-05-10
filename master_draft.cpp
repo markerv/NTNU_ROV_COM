@@ -33,16 +33,18 @@ std::string SDMPATH = "lib/sdmsh/";
 int JANUS_RX_PORT = 9988;
 int JANUS_TX_PORT = 9977;
 
-janusxsdm::janus con("192.168.0.189",JANUSPATH,SDMPATH, JANUS_RX_PORT,JANUS_TX_PORT);
+janusxsdm::janus modem("192.168.0.189",JANUSPATH,SDMPATH, JANUS_RX_PORT,JANUS_TX_PORT);
 
 int janus_tx(string data){
-    con.sendSimple(data);
+    modem.sendSimple(data);
     return 1;
 }
 
 string janus_rx(int timeOut_interval){
+    std::chrono::duration<double> t;
+    t = std::chrono::duration<double> {timeOut_interval};
     string response;
-    con.listen(response, std::chrono_literals<seconds> timeOut_interval);
+    modem.listen(response, t);
     return response;
 }
 
@@ -53,16 +55,6 @@ int set_config(){       //sets the configurational parameters for the network, a
         janus_tx(send_command);
     }
     return 0;
-}
-
-bool receive_ack(bool state, string address){
-    int delay = 1;      //test
-    delay *= CLOCKS_PER_SEC;
-    clock_t now = clock();
-    while(clock() - now <delay){
-        state = true;
-    }
-    return state;
 }
 
 void edit_nodes_lst(bool remove, string node){
@@ -133,7 +125,7 @@ string response_check(string response,string mac){
         spos = 10;
         epos = response.find(">>");
         string data_string = response.substr(spos, epos-spos);
-        if(data_string !== "OK"){
+        if(data_string != "OK"){
             edit_nodes_lst(false,data_string);
         }
         return "";
@@ -177,7 +169,8 @@ void network_transmission(){        //Network transmission commences here..
     cout << "Network transmission starting with time slot " << time_slot_duration << "ms.\n";
     //while(true){
         for(int i = 0; i<nodes_addresses.size();i++){
-            string master_ready_cmd = "//SUP-MR//"+nodes_addresses[i]+";"+master_mac+">>";
+            int id = i+1;
+            string master_ready_cmd = "//SUP-MT//"+nodes_addresses[i]+";"+ std::to_string(id) +">>";
             janus_tx(master_ready_cmd);
             string response = janus_rx(time_slot_duration/2);
             response_check(response,nodes_addresses[i]);
@@ -215,7 +208,7 @@ void read_nodes_lst()
 }
 
 void nodes_check(){
-    auto prev_time_elapsed = chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now()-chrono::steady_clock::now());
+    auto prev_time_elapsed = chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now()-chrono::steady_clock::now());
     cout << "Check of nodes commencing.." << "\n";
     string send_command;
     for(int i = 0;i<nodes_addresses.size();i++){
@@ -224,22 +217,22 @@ void nodes_check(){
         send_command = "//SUP-MD//"+nodes_addresses[i]+";" + master_mac + ">>";
         auto start = chrono::steady_clock::now();
         janus_tx(send_command);
-        response = janus_rx(5);
-        auto time_elapsed = chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now()-start);
-        if(time_elapsed>prev_time_elapsed && state){
+        response = janus_rx(15);
+        auto time_elapsed = chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now()-start);
+        if(time_elapsed>prev_time_elapsed){
             prev_time_elapsed = time_elapsed;
         }
         response_check(response, nodes_addresses[i]);
     }
     cout << "All addresses tested." << "\n";
-    time_slot_duration = prev_time_elapsed.count()*1.2;  //the calculated time-slot to be assigned to all nodes based on the longest response time +10%
+    time_slot_duration = prev_time_elapsed.count()*1.2;  //the calculated time-slot to be assigned to all nodes based on the longest response time +20%
     cout << "Time slot duration: " << std::to_string(time_slot_duration) << "ms" << endl;
     check_complete=true;
 }
 
 void node_interrogation(string mac){
-    string send_command = "//SUP-RA//"+mac+";"+master_mac+">>";
-    janus_tx(send_command);
+    // string send_command = "//SUP-RA//"+mac+";"+master_mac+">>";
+    // janus_tx(send_command);
     string response = response_check(janus_rx(5),mac);
     nodes_addresses.push_back(mac);
 }
@@ -248,7 +241,7 @@ void master_ready(){
     string send_command;
     send_command = "//SUP-MR//"+master_mac+">>";
     janus_tx(send_command);
-    string response = janus_rx(5);//fix listening and interruption after a given time period
+    string response = janus_rx(time_slot_duration);//fix listening and interruption after a given time period
     string new_node_mac = response_check(response,"");
     if(new_node_mac != ""){
         node_interrogation(new_node_mac);
