@@ -132,6 +132,12 @@ namespace janusxsdm
                 char buffer[1024];
                 while(true)
                 {
+                    std::cout << waitpid(jns_pid, 0, WNOHANG);
+                    if(waitpid(jns_pid, 0, WNOHANG) == jns_pid)
+                    {
+                        std::cout << "Janus done, quitting\n";
+                        break;
+                    }
                     ssize_t count = read(filedes[0], buffer, sizeof(buffer));
                     if(count == -1)
                     {
@@ -152,6 +158,7 @@ namespace janusxsdm
                     }
                     else
                     {
+                        
                         std::string dstr = buffer;
                         int j = dstr.find("TX_STOP after");
                         std::cout << "SDMSH(" << std::to_string(j) << "): " << dstr << std::endl;
@@ -159,7 +166,7 @@ namespace janusxsdm
                         {
                             std::cout << "exiting\n";
                             //while(read(filedes[0], buffer, sizeof(buffer)) != 0) {}
-                            kill(jns_pid, SIGTSTP);
+                            kill(jns_pid, SIGKILL);
                             //if(kill(jns_pid, 0) == 0)
                             // {
                             //     std::cout << "Unable to kill janus!" << std::endl;
@@ -167,7 +174,7 @@ namespace janusxsdm
                             //     int i;
                             //     waitpid(jns_pid, &i, 0);
                             // }
-                            kill(sdm_pid, SIGTSTP);
+                            kill(sdm_pid, SIGKILL);
                             //if(kill(sdm_pid, 0) == 0)
                             // {
                             //     std::cout << "Unable to kill sdm!" << std::endl;
@@ -510,8 +517,8 @@ namespace janusxsdm
 
                     message = cargo; //Writing cargo to message argument
                     //Terminating children
-                    kill(jns_pid, SIGTSTP);
-                    kill(sdm_pid, SIGTSTP);
+                    kill(jns_pid, SIGKILL);
+                    kill(sdm_pid, SIGKILL);
                     close(filedes[1]);
                     close(filedes[0]);
                     return 1;
@@ -527,11 +534,13 @@ namespace janusxsdm
                         if(std::chrono::duration<double>(now - start).count() >= timeout.count())
                         {
                             std::cout << "Timeout reached, terminating!\n";
-                            kill(jns_pid, SIGTSTP);
-                            kill(sdm_pid, SIGTSTP);
-                            kill(rd_pid, SIGTSTP);
+                            kill(sdm_pid, SIGKILL);
+                            kill(jns_pid, SIGKILL);
+                            
+                            kill(rd_pid, SIGKILL);
                             close(filedes[1]);
                             close(filedes[0]);
+                            wait(0);
                             return 0;
                         }
                         rdStat = waitpid(rd_pid, 0, WNOHANG);
