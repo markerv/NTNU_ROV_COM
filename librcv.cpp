@@ -25,10 +25,14 @@ int main()
     std::string returnMessage;
     //modem2.sdmconf();
     //std::this_thread::sleep_for(1000ms);
-    if(modem2.listen(returnMessage, 10s))
+    while(true)
     {
-        std::cout << "Message was: " << returnMessage << std::endl;
+        if(modem2.listen(returnMessage, 6s))
+        {
+            std::cout << "Message was: " << returnMessage << std::endl;
+        }
     }
+    
     //std::cout << "I swear i did not hit her, i swear.. i did noot..\n";
     //std::cout << "ohh, hi Mark!\n";
     
