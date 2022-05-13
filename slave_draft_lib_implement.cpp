@@ -12,9 +12,10 @@
 
 using namespace std;
 
-string fname = "info_files/node_info.csv";
-string JANUSPATH = "lib/janus-c-3.0.5/bin/";
-string SDMPATH = "lib/sdmsh/";
+string fname = "info_files/node_info.csv";      //path for node info file
+string JANUSPATH = "lib/janus-c-3.0.5/bin/";    //path to janus-folder
+string SDMPATH = "lib/sdmsh/";                  //path to sdm-folder
+string test;
 
 bool master;
 bool check_done = false;
