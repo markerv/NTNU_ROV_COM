@@ -19,7 +19,7 @@ vector<string> nodes_addresses;     //Includes only the MAC-addresses fetched fr
 vector<vector<string>> content;     //Includes the whole csv-file, 
 bool check_complete=false;
 bool node_check;
-string fname = "info_files/nodes_lst.csv";
+string fname = "info_files/nodes_lst.csv";  //path to nodes list file
 string master_mac = "48:0f:cf:01:f7:fc";
 
 string data1;       //declarations for sensor data received from nodes
