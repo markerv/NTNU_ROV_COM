@@ -21,7 +21,7 @@ int main()
 {
     
     std::cout << "Tester\n";
-    janusxsdm::janus modem1("192.168.0.189", JANUSPATH, SDMPATH, 9007, 9045); //Constructing a connection object;
+    janusxsdm::connection modem1("192.168.0.189", JANUSPATH, SDMPATH, 9007, 9045); //Constructing a connection object;
     //modem1.sdmconf();
     modem1.sendSimple("KUK-asscock-Nudes");
     // modem1.sendSimple("123456789123456789FinkenerhomodaHaHA-fkjhdafkasndfaiunvsakjvndbvdrfnasouvnakjhfzlkdjhsakraiusnvkjdn");

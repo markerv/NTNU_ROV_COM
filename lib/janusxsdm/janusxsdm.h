@@ -4,7 +4,7 @@
 
 namespace janusxsdm
 {
-    class janus
+    class connection
     {
     private:
         std::string mIP, JPATH, SPATH;
@@ -12,7 +12,7 @@ namespace janusxsdm
         static uint8_t SDM_FRAMEHEADER[];
     public:
         //Constructor, takes IPV4 of acoustic modem, paths to janus and sdmsh executables and ports to reserve for janus encoding/decoding
-        janus(std::string modemIP, std::string JANUSPATH, std::string SDMPATH, int rxPort, int txPort);
+        connection(std::string modemIP, std::string JANUSPATH, std::string SDMPATH, int rxPort, int txPort);
 
         //Setting correct config on sdm
         int sdmconf();
