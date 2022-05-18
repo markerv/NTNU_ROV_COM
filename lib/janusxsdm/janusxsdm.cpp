@@ -1,6 +1,9 @@
 // Library that simplifies interfacing with janus and sdm for subsea acoustic communication
 // This library requires that sdmsh and janus is installed
 
+// This library is not an ideal solution
+// An ideal version was not chosen due to time-constraints, lack of experience and lack of documentation for both janus.h and sdm.h
+// People seeking to implement an efficent version of JANUS with sdm should look into implementing the libraries directly
 
 #define LIBNAME "janusxsdm"
 
@@ -268,9 +271,9 @@ namespace janusxsdm
 
             char arg1[] = "sh";
             char arg2[] = "-c";
-            std::string jcmd = "(cd " + JPATH + " && ./janus-rx --pset-file ../etc/parameter_sets.csv --pset-id 2 --stream-driver tcp --stream-driver-args listen:127.0.0.1:" + std::to_string(RX_PORT)+" --stream-fs 96000 --verbose 1 2>&1)";
+            //std::string jcmd = "(cd " + JPATH + " && ./janus-rx --pset-file ../etc/parameter_sets.csv --pset-id 2 --stream-driver tcp --stream-driver-args listen:127.0.0.1:" + std::to_string(RX_PORT)+" --stream-fs 96000 --verbose 1 2>&1)";
             //Dummy for testing:
-            //std::string jcmd = "(cd " + JPATH + " && ./janus-rx  --pset-file ../etc/parameter_sets.csv --pset-id 2 --stream-driver raw --stream-driver-args ../data/janusMessage.raw --stream-fs 250000 --stream-format S16 --verbose 1 2>&1)";
+            std::string jcmd = "(cd " + JPATH + " && ./janus-rx  --pset-file ../etc/parameter_sets.csv --pset-id 2 --stream-driver raw --stream-driver-args ../data/janusMessage.raw --stream-fs 250000 --stream-format S16 --verbose 1 2>&1)";
             //
             //std::cout << jcmd << std::endl;
             char* jns_arg[] = {arg1, arg2, (char*)jcmd.c_str(), NULL};
@@ -294,9 +297,9 @@ namespace janusxsdm
                 char arg2[] = "-c";
                 std::string scmd = "(cd " + SPATH + " && ./sdmsh " + mIP + " -e 'rx 0 tcp:connect:127.0.0.1:" + std::to_string(RX_PORT) + "')";
                 char* sdm_arg[] = {arg1, arg2, (char*)scmd.c_str(), NULL};
-                execvp(sdm_arg[0], sdm_arg);
-                perror("execvp");
-                _exit(1);
+                //execvp(sdm_arg[0], sdm_arg);
+                //perror("execvp");
+                //_exit(1);
             }
             else
             {
