@@ -42,7 +42,7 @@ string data2;
 string data3;
 string data4;
 
-janusxsdm::janus modem("192.168.0.199", JANUSPATH, SDMPATH, 9926, 9916); //Constructing a connection object;
+janusxsdm::connection modem("192.168.0.199", JANUSPATH, SDMPATH, 9926, 9916); //Constructing a connection object;
 
 string janus_rx(int timeOut_interval){
     string response;
