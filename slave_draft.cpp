@@ -34,7 +34,7 @@ std::string SDMPATH = "lib/sdmsh/";
 int JANUS_RX_PORT = 9988;
 int JANUS_TX_PORT = 9977;
 
-janusxsdm::janus con("192.168.0.189",JANUSPATH,SDMPATH,JANUS_RX_PORT,JANUS_TX_PORT);
+janusxsdm::connection con("192.168.0.189",JANUSPATH,SDMPATH,JANUS_RX_PORT,JANUS_TX_PORT);
 
 string janus_rx(int timeOut_interval){
     string response;

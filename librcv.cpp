@@ -21,7 +21,7 @@ int main()
 {
     
     std::cout << "Tester\n";
-    janusxsdm::janus modem2("192.168.0.199", JANUSPATH, SDMPATH, 9998, 9955); //Constructing a connection object;
+    janusxsdm::connection modem2("192.168.0.199", JANUSPATH, SDMPATH, 9998, 9955); //Constructing a connection object;
     std::string returnMessage;
     //modem2.sdmconf();
     //std::this_thread::sleep_for(1000ms);

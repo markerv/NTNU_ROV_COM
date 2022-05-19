@@ -1,11 +1,9 @@
 // Library that simplifies interfacing with janus and sdm for subsea acoustic communication
 // This library requires that sdmsh and janus is installed
 
-//Authors:
-//Markus Naess Ervik
-//
-//
-//
+// This library is not an ideal solution
+// An ideal version was not chosen due to time-constraints, lack of experience and lack of documentation for both janus.h and sdm.h
+// People seeking to implement an efficent version of JANUS with sdm should look into implementing the libraries directly
 
 #define LIBNAME "janusxsdm"
 
@@ -40,9 +38,9 @@ namespace janusxsdm
 {
     //std::string janus::mIP, janus::JPATH, janus::SPATH;
     //int janus::RX_PORT, janus::TX_PORT;
-    uint8_t janus::SDM_FRAMEHEADER[] = {0x80, 0x00, 0x7f, 0xff, 0x00, 0x00, 0x00, 0x00};
+    uint8_t connection::SDM_FRAMEHEADER[] = {0x80, 0x00, 0x7f, 0xff, 0x00, 0x00, 0x00, 0x00};
 
-    janus::janus(std::string modemIP, std::string JANUSPATH, std::string SDMPATH, int rxPort, int txPort)
+    connection::connection(std::string modemIP, std::string JANUSPATH, std::string SDMPATH, int rxPort, int txPort)
     {
         mIP = modemIP;
         JPATH = JANUSPATH;
@@ -50,7 +48,7 @@ namespace janusxsdm
         RX_PORT = rxPort;
         TX_PORT = txPort;
     }
-    int janus::sdmconf()
+    int connection::sdmconf()
     {
         //Could also add setting modem in "PHY" state here (nc $IP PORT +++ATP)
         std::string sdmcommand = "(cd " + SPATH + " && ./sdmsh " + mIP + " -e 'stop;config 30 0 3 0')";
@@ -59,7 +57,7 @@ namespace janusxsdm
         std::cout << "Modem with IP: " << mIP << " configured." << std::endl;
         return 1;
     }
-    int janus::setPreamble()
+    int connection::setPreamble()
     {
         std::string sdmcommand = "(cd " + SPATH + " && ./sdmsh " + mIP + " -e 'stop;ref preamble.raw')";
         FILE* terminal = popen(sdmcommand.c_str(), "r");
@@ -67,7 +65,7 @@ namespace janusxsdm
         std::cout << "Preamble set for modem with IP: " << mIP << std::endl;
         return 1;
     }
-    void janus::sendSimple(std::string message)
+    void connection::sendSimple(std::string message)
     {
         std::cout << "Encoding and transmitting the message: " << message << " with janus..." << std::endl;
         int samples;
@@ -121,7 +119,7 @@ namespace janusxsdm
             {
                 char arg1[] = "sh";
                 char arg2[] = "-c";
-                std::string jcmd = "(cd " + JPATH + " && ./janus-tx --pset-file ../etc/parameter_sets.csv --pset-id 2 --stream-driver tcp --stream-driver-args connect:127.0.0.1:"+std::to_string(TX_PORT)+" --stream-fs 96000 --verbose 9 --packet-cargo \""+message+"\" )";
+                std::string jcmd = "(cd " + JPATH + " && ./janus-tx --pset-file ../etc/parameter_sets.csv --pset-id 2 --stream-driver tcp --stream-driver-args connect:127.0.0.1:"+std::to_string(TX_PORT)+" --stream-fs 96000 --stream-format S16 --verbose 9 --packet-cargo \""+message+"\" )";
                 char* jns_arg[] = {arg1, arg2, (char*)jcmd.c_str(), NULL};
                 execvp(jns_arg[0], jns_arg);
                 perror("execvp");
@@ -200,7 +198,7 @@ namespace janusxsdm
 
         }
     }
-    int janus::decode(int16_t buf[], std::string &message)
+    int connection::decode(int16_t buf[], std::string &message)
     {
         std::cerr << LIBNAME << ": Decode does nothing as it is unfinished" << std::endl;
         /*
@@ -249,7 +247,7 @@ namespace janusxsdm
         */
         return 1;
     }
-    int janus::listenSimple(std::string &message)
+    int connection::listenSimple(std::string &message)
     {
         int filedes[2];
         if(pipe(filedes) == -1) //Creating pipe
@@ -273,9 +271,9 @@ namespace janusxsdm
 
             char arg1[] = "sh";
             char arg2[] = "-c";
-            std::string jcmd = "(cd " + JPATH + " && ./janus-rx --pset-file ../etc/parameter_sets.csv --pset-id 2 --stream-driver tcp --stream-driver-args listen:127.0.0.1:" + std::to_string(RX_PORT)+" --stream-fs 96000 --verbose 1 2>&1)";
+            //std::string jcmd = "(cd " + JPATH + " && ./janus-rx --pset-file ../etc/parameter_sets.csv --pset-id 2 --stream-driver tcp --stream-driver-args listen:127.0.0.1:" + std::to_string(RX_PORT)+" --stream-fs 96000 --verbose 1 2>&1)";
             //Dummy for testing:
-            //std::string jcmd = "(cd " + JPATH + " && ./janus-rx  --pset-file ../etc/parameter_sets.csv --pset-id 2 --stream-driver raw --stream-driver-args ../data/janusMessage.raw --stream-fs 250000 --stream-format S16 --verbose 1 2>&1)";
+            std::string jcmd = "(cd " + JPATH + " && ./janus-rx  --pset-file ../etc/parameter_sets.csv --pset-id 2 --stream-driver raw --stream-driver-args ../data/janusMessage.raw --stream-fs 250000 --stream-format S16 --verbose 1 2>&1)";
             //
             //std::cout << jcmd << std::endl;
             char* jns_arg[] = {arg1, arg2, (char*)jcmd.c_str(), NULL};
@@ -299,9 +297,9 @@ namespace janusxsdm
                 char arg2[] = "-c";
                 std::string scmd = "(cd " + SPATH + " && ./sdmsh " + mIP + " -e 'rx 0 tcp:connect:127.0.0.1:" + std::to_string(RX_PORT) + "')";
                 char* sdm_arg[] = {arg1, arg2, (char*)scmd.c_str(), NULL};
-                execvp(sdm_arg[0], sdm_arg);
-                perror("execvp");
-                _exit(1);
+                //execvp(sdm_arg[0], sdm_arg);
+                //perror("execvp");
+                //_exit(1);
             }
             else
             {
@@ -392,7 +390,7 @@ namespace janusxsdm
             return 0;
         }
     }
-    int janus::listen(std::string &message, std::chrono::duration<double> timeout)
+    int connection::listen(std::string &message, std::chrono::duration<double> timeout)
     {
         int filedes[2];
         if(pipe(filedes) == -1) //Creating pipe
@@ -563,7 +561,7 @@ namespace janusxsdm
             return 0;
         }
     }
-    int janus::printheader()
+    int connection::printheader()
     {
         for(int i = 0; i <= 7; i++)
         {
@@ -573,7 +571,7 @@ namespace janusxsdm
         std::cout << std::endl;
         return 1;
     }
-    int janus::sdmStop()
+    int connection::sdmStop()
     {
         return 0;
     }

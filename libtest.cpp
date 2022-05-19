@@ -21,8 +21,8 @@ int main()
 {
     
     std::cout << "Tester\n";
-    janusxsdm::janus modem1("192.168.0.189", JANUSPATH, SDMPATH, 9988, 9989); //Constructing a connection object;
-    // janusxsdm::janus modem2("192.168.0.198", JANUSPATH, SDMPATH, 9978, 9979); //Constructing a connection object;
+    janusxsdm::connection modem1("192.168.0.189", JANUSPATH, SDMPATH, 9988, 9989); //Constructing a connection object;
+    // janusxsdm::connection modem2("192.168.0.198", JANUSPATH, SDMPATH, 9978, 9979); //Constructing a connection object;
     // std::string returnMessage;
     // if(modem1.listen(returnMessage, 30s))
     // {
