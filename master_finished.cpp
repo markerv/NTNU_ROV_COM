@@ -41,7 +41,7 @@ std::string SDMPATH = "src/cpp_pubsub/src/lib/sdmsh/";
 int JANUS_RX_PORT = 9970;
 int JANUS_TX_PORT = 9960;
 
-janusxsdm::janus modem("192.168.0.189",JANUSPATH,SDMPATH, JANUS_RX_PORT,JANUS_TX_PORT);
+janusxsdm::connection modem("192.168.0.189",JANUSPATH,SDMPATH, JANUS_RX_PORT,JANUS_TX_PORT);
 
 // class MinimalPublisher : public rclcpp::Node                     The code related to the ROS 2 subscriber
 // {                                                                Commented out due to lack of proper testing
