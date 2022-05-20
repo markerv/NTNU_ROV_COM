@@ -1,56 +1,56 @@
 # NTNU_ROV_COM
-## Det som står her dukker opp på repoen
+This is a collection of code used in a NTNU bachelors-thesis where the goal was to achievie automatic transmission of data between multiple ROS based ROV's using acoustic modems.
 
-##Manual Test Instructions
-End all messages to device with the line feed command (\n)
-IP is specified in Factory Certificate
-Default socket is 9200
+The solution uses the JANUS protocol as a universal language allowing for integration of modems from differing manufacturers. The original implementation was done with Evologics 18-34 USBL modems.
 
-Establish connection with:
-nc MODEM_IP MODEM_SOCKET
+## Requirements
+The solution requires some libraries to function propperly:
 
-Then:
-+++AT?S
+### Make
+make -version #Check if make is installed
+sudo apt install make
+sudo apt install build-essential
 
-Response should be:
-+++INITIATION LISTEN <Pool Size>
+### cmake
+sudo snap install cmake --classic
 
-###Link
-Type +++ to enter command mode
-Response should be OK
+### FFTW3
+wget http://fftw.org/fftw-3.3.10.tar.gz
+tar -xzf fftw-3.3.10.tar.gz
+cd fftw-3.3.10
+./configure
+make
+sudo make install
+make check
 
-Source Level (Trans Gain)
-AT!L3   Lowest setting
-AT!L2
-AT!L1
-AT!L0   Highest setting
+### libreadline
+sudo apt-get install libreadline-dev
 
-High-power air transmission can damage the device!EvoLogics warranty does not cover these damages!
+## Compilation
+### Compile SDMSH
+in "lib/sdmsh/":
+make
 
-AT&W    saves settings
+### Compile JANUS
+The supplied version of JANUS comes patched with the Evologics Patchset.
 
-Type AT0 to enter data mode
-Now you are free to transmitt data
+in "lib/janus-c-3.0.5/":
+cmake -S . -B bin/
+cd bin
+make .
 
-Try +++AT?S
-Expecting Response ONLINE
+### Compile execution files
+The main code sould be checked to make sure that the modem IP is corret before compilation.
 
-Send AT?E    To get input signal level.
-Send AT?I   To get signal integrity level.
-Send AT?BR  To get remote-to-local bitrate.
-Send AT?BL   To get local-to-remote bitrate.
+The executables were built induvidually using the compiler in visual studio. Parameters for the compilation process can be found in ".vscode/task.json"
 
+## Setup
 
-ATD     Establish acoustinc conn
-ATHn    Close an acoustic connection n=(0 or 1)(Gracefully or Violent)
-AT&V: Get current settings
-AT?G and AT!Gn: Gain
-    0   Normal gain, corresponds to high sensitivity.
-    1   Low gain, corresponds to -20dB reduced sensitivity. Recommended for short distances or testing purposes.
+Firstly the modems should be in "PHY"-mode. This can be done by acessing them over tcp and issuing a command:
 
-AT?C and AT!Cn: Carrier Waveform ID
-0-1 for testing
-2-2 or 3-3 ideal for networking
+nc MODEM_IP MODEM_SOCKET //Default socket is 9200
++++ATP
 
-AT?AL and AT!ALn: Local Address
-AT?AR and AT!ARn: Remote Address
+Then modemSetup can be run to configure source level and the JANUS preamble.
+
+The modems are now ready to transceive!
