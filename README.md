@@ -7,11 +7,11 @@ The solution uses the JANUS protocol as a universal language allowing for integr
 The solution requires some libraries to function propperly:
 
 ### Make
-...
+```bash
 make -version #Check if make is installed
 sudo apt install make
 sudo apt install build-essential
-...
+```
 ### cmake
 sudo snap install cmake --classic
 
