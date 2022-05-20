@@ -19,15 +19,10 @@ using namespace std::chrono_literals;
 
 int main()
 {
-    
-    std::cout << "Tester\n";
-    janusxsdm::connection modem1("192.168.0.189", JANUSPATH, SDMPATH, 9007, 9045); //Constructing a connection object;
-    janusxsdm::connection modem2("192.168.0.199", JANUSPATH, SDMPATH, 9027, 9065); //Constructing a connection object;
-    modem1.sdmconf();
-    std::this_thread::sleep_for(500ms);
-    modem2.sdmconf();
-    std::this_thread::sleep_for(500ms);
-    modem1.setPreamble();
-    std::this_thread::sleep_for(500ms);
-    modem2.setPreamble();
+    std::cout << "Setting source level to low and configuring preamble.." << std::endl;
+    janusxsdm::connection modem("192.168.0.189", JANUSPATH, SDMPATH, 9007, 9045); //Constructing a connection object;
+    modem.sdmconf();
+    std::this_thread::sleep_for(1000ms);
+    modem.setPreamble();
+    std::cout << "Setup done" << std::endl;
 }
