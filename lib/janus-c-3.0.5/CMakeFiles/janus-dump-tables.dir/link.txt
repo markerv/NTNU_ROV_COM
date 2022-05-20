@@ -1,1 +1,0 @@
-/usr/bin/cc  -fPIC  -rdynamic CMakeFiles/janus-dump-tables.dir/programs/dump_tables.c.o  -o janus-dump-tables  libjanus.a -lrt -lpthread -lm -lnsl -ldl /usr/local/lib/libfftw3.a 

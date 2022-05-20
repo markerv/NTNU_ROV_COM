@@ -1,1 +1,0 @@
-/usr/bin/cc  -fPIC  -rdynamic CMakeFiles/test_hop_index.dir/tests/c/hop_index.c.o  -o test_hop_index  libjanus.a -lrt -lpthread -lm -lnsl -ldl /usr/local/lib/libfftw3.a 
