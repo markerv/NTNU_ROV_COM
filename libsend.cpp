@@ -1,3 +1,5 @@
+// Simple code demonstrating how to send data using janusxsdm
+
 #include<iostream>
 #include<fstream>
 #include<stdlib.h>
