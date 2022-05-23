@@ -27,9 +27,17 @@ int main()
 
     while(true)
     {
-        if(modem.listen(returnMessage, 5s))
+        if(modem.listen(returnMessage, 5s)) //Will listen for 5 seconds then continue, allowing for operations in between
         {
             std::cout << "Message was: " << returnMessage << std::endl;
+            if(returnMessage == "Die potato!");
+            {
+                break;
+            }
+        }
+        else
+        {
+            std::cout << "No message" << std::endl;
         }
     }
     //std::cout << "rcv done" << std::endl;
