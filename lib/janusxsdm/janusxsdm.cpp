@@ -470,10 +470,10 @@ namespace janusxsdm
                 char arg1[] = "sh";
                 char arg2[] = "-c";
                 std::string scmd = "(cd " + SPATH + " && ./sdmsh " + mIP + " -e 'rx 0 tcp:connect:127.0.0.1:" + std::to_string(RX_PORT) + "' 2>&1 > rxlog.txt)";
-                //Dummy for testing:
-                //std::string scmd = "(cd " + JPATH + " && ./janus-tx --pset-file ../etc/parameter_sets.csv --pset-id 2 --stream-driver tcp --stream-driver-args connect:127.0.0.1:" + std::to_string(RX_PORT) + " --stream-fs 96000 --verbose 1 --packet-cargo 'fakngay')";
-                //
-                //std::this_thread::sleep_for(2s);
+
+                //Dummy for testing wo/modem:
+                //std::string scmd = "(cd " + JPATH + " && ./janus-tx --pset-file ../etc/parameter_sets.csv --pset-id 2 --stream-driver tcp --stream-driver-args connect:127.0.0.1:" + std::to_string(RX_PORT) + " --stream-fs 96000 --verbose 1 --packet-cargo 'Hello World!')";
+
                 char* sdm_arg[] = {arg1, arg2, (char*)scmd.c_str(), NULL};
                 execvp(sdm_arg[0], sdm_arg);
                 perror("execvp");
@@ -526,138 +526,34 @@ namespace janusxsdm
                     }
                 }
                 //std::cout << janusframe << std::endl;
+
+                //Closing readpipe and terminating child processes
                 close(fd[0]);
                 kill(jns_pid, SIGINT);
                 kill(jns_pid+1, SIGINT);
                 kill(sdm_pid, SIGINT);
-                //std::string idStr = "Packet         : Cargo (ASCII)                                : \"";
+
                 std::string idStr = "Packet         :   Payload                                    : ";
                 std::string endStr = "\n";
 
-                size_t spos = janusframe.find(idStr) + idStr.length();
-                //std::cout << "Cargo found in " << spos << std::endl;
+                size_t spos, epos, pos;
 
-                size_t epos = janusframe.find(endStr, spos);
-
-                std::string cargo = janusframe.substr(spos, epos-spos);
-                //std::cout << "Cargo is: " << cargo << std::endl;
-
-                message = cargo; //Writing cargo to message argument
-                return 1;
-                /*
-                pid_t rd_pid = fork();
-                if(rd_pid == -1) //Error
+                pos = janusframe.find(idStr);
+                if(pos != std::string::npos)
                 {
-                    perror("fork");
-                    exit(1);
-                }
-                else if(rd_pid == 0)
-                {
-                    char buffer[2048];
-                    ssize_t count;
-                    std::string janusFrame;
-                    while(true)
-                    {
-                        if(janusFrame.find("Packet         :   Payload                                    :") != std::string::npos) //To catch EOF before read blocks
-                        {
-                            break;
-                        }
-                        count = read(filedes[0], buffer, sizeof(buffer));
-                        //std::cout << buffer;
-                        if(count == -1)
-                        {
-                            if(errno == EINTR)
-                            {
-                                continue;
-                            }
-                            else
-                            {
-                                perror("read");
-                                exit(1);
-                            }
-                        }
-                        else if(count == 0)
-                        {
-                            std::cout << "EOF reached\n";
-                            break;
-                        }
-                        else
-                        {
-                            janusFrame += buffer;
-                            std::string idStr = "Packet         : Cargo (ASCII)                                : \"";
-                            int j = janusFrame.find(idStr);
-                            //std::cout << buffer;
-                            if(j != std::string::npos)
-                            {
-                                count = read(filedes[0], buffer, sizeof(buffer));
-                                janusFrame += buffer;
-                                std::cout << "\nFound cargo, exiting\n";
-
-                                //std::cout << janusFrame << std::endl;
-                                break;
-                            }
-                        }
-                        //std::cout << "Buffering..\n";
-                    }
-                    //std::cout << janusFrame << std::endl;
-                    //std::cout << "Done rcv\n";
-                    std::string idStr = "Packet         : Cargo (ASCII)                                : \"";
-                    idStr = "Packet         :   Payload                                    :";
-                    std::string endStr = "\n";
-
-                    size_t spos = janusFrame.find(idStr) + idStr.length();
-                    //std::cout << "Cargo found in " << spos << std::endl;
-
-                    size_t epos = janusFrame.find(endStr, spos);
-
-                    std::string cargo = janusFrame.substr(spos, epos-spos);
-                    //std::cout << "Cargo is: " << cargo << std::endl;
-
-                    message = cargo; //Writing cargo to message argument
-                    //Terminating children
-                    kill(jns_pid, SIGKILL);
-                    kill(sdm_pid, SIGKILL);
-                    close(filedes[1]);
-                    close(filedes[0]);
+                    spos = pos + idStr.length();
+                    std::cout << "Cargo found in " << spos << std::endl;
+                    epos = janusframe.find(endStr, spos);
+                    message = janusframe.substr(spos, epos-spos);
+                    //std::cout << "Cargo is: " << message << std::endl;
                     return 1;
+
                 }
                 else
                 {
-                    std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
-                    std::chrono::steady_clock::time_point now;
-                    pid_t rdStat;
-                    while(true)
-                    {
-                        now = std::chrono::steady_clock::now();
-                        if(std::chrono::duration<double>(now - start).count() >= timeout.count())
-                        {
-                            std::cout << "Timeout reached, terminating!\n";
-                            kill(sdm_pid, SIGKILL);
-                            kill(jns_pid, SIGKILL);
-                            
-                            kill(rd_pid, SIGKILL);
-                            close(filedes[1]);
-                            close(filedes[0]);
-                            wait(0);
-                            return 0;
-                        }
-                        rdStat = waitpid(rd_pid, 0, WNOHANG);
-                        if(rdStat == -1)
-                        {
-                            perror("waitpid");
-                            exit(1);
-                        }
-                        else if(rdStat == rd_pid)
-                        {
-                            //std::cout << "Reader done\n";
-                            exit(0);
-                        }
-                        //std::cout << "Timer_waitpid: " << waitpid(rd_pid, 0, WNOHANG) << "\n";
-                        //else if(waitpid(jns_pid, 0, WNOHANG) != 0) {}
-                        
-                    }
+                    std::cerr << "Error cargo not found, this should not happen..." << std::endl;
+                    exit(EXIT_FAILURE);
                 }
-                */
             }
             return 0;
         }
