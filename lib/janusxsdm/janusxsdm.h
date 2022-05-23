@@ -36,10 +36,7 @@ namespace janusxsdm
         //Simplified sdm listener, will break if communication is incomplete or missing
         int listenSimple(std::string &message);
 
-        //Listener that stops blocking after timeout, uses rawfile as intermediary
-        int listenR2(std::string &message, std::chrono::duration<double> timeout);
-
-        //Listener that stops blocking after timeout (works 1/3 times, needs fixing)
+        //Listener that stops blocking after timeout (works 9/10 times, needs fixing, generates zombies i think)
         int listen(std::string &message, std::chrono::duration<double> timeout);
 
         //Beginning of an attempt to a direct com with the modem

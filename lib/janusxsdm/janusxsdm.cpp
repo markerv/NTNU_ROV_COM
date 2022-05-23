@@ -392,33 +392,6 @@ namespace janusxsdm
             return 0;
         }
     }
-    int connection::listenR2(std::string &message, std::chrono::duration<double> timeout)
-    {
-        std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
-
-        int fd[2];
-        // fd[0] - Read
-        // fd[1] - Write
-        if(pipe(fd) == -1)
-        {
-            std::cerr << "Failed to open pipe" << std::endl;
-            return 1;
-        }
-
-        pid_t sdm_pid = fork();
-        if(sdm_pid == -1)
-        {
-            perror("fork");
-            exit(1);
-        }
-        else if(sdm_pid == 0) //sdm process
-        {
-            //std::string jcmd = "(cd " + JPATH + " && ./janus-rx  --pset-file ../etc/parameter_sets.csv --pset-id 2 --stream-driver raw --stream-driver-args ../data/janusMessage.raw --stream-fs 250000 --stream-format S16 --verbose 1 2>&1)";
-            std::string scmd = "(cd " + SPATH + " && ./sdmsh " + mIP + " -e 'rx";
-
-        }
-        return 1;
-    }
     int connection::listen(std::string &message, std::chrono::duration<double> timeout)
     {
         int fd[2];
