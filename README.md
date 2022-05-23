@@ -45,10 +45,11 @@ in "lib/janus-c-3.0.5/":
 cmake -S . -B bin/
 cd bin
 make .
+sudo make install
 ```
 
 ### Compile execution files
-The main code sould be checked to make sure that the modem IP is corret before compilation.
+The main code sould be checked to make sure that the modem IP is correct before compilation.
 
 The executables were built induvidually using the compiler in visual studio. Parameters for the compilation process can be found in ".vscode/task.json"
 

@@ -403,7 +403,7 @@ namespace janusxsdm
             perror("pipe");
             exit(EXIT_FAILURE);
         }
-        if (fcntl(fd[0], F_SETFL, O_NONBLOCK) < 0) //Making pipRead non-blocking
+        if (fcntl(fd[0], F_SETFL, O_NONBLOCK) < 0) //Making pipeRead non-blocking
         {
             exit(2);
         }
@@ -420,7 +420,6 @@ namespace janusxsdm
             while((dup2(fd[1], STDERR_FILENO) == -1) && (errno == EINTR)) {} //Redirecting stderr to pipe (erroroutput now goes to pipe)
             close(fd[1]);
             close(fd[0]);
-            //setpgid(jns_pid, 0);
             
             char arg1[] = "sh";
             char arg2[] = "-c";
@@ -429,7 +428,7 @@ namespace janusxsdm
             char* jns_arg[] = {arg1, arg2, (char*)jcmd.c_str(), NULL};
             execvp(jns_arg[0], jns_arg);
             
-            //This will have janus keep original pidbut pathing gets broken
+            //This will have janus keep original pid but pathing gets broken
             // char *args[16];
             // std::string arg1 = JPATH + "janus-rx";
             // std::string arg3 = JPATH + "../etc/parameter_sets.csv";
@@ -470,7 +469,7 @@ namespace janusxsdm
                 // std::cout << "Spawned sdm child\n";
                 char arg1[] = "sh";
                 char arg2[] = "-c";
-                std::string scmd = "(cd " + SPATH + " && ./sdmsh " + mIP + " -e 'rx 0 tcp:connect:127.0.0.1:" + std::to_string(RX_PORT) + "')";
+                std::string scmd = "(cd " + SPATH + " && ./sdmsh " + mIP + " -e 'rx 0 tcp:connect:127.0.0.1:" + std::to_string(RX_PORT) + "' 2>&1 > rxlog.txt)";
                 //Dummy for testing:
                 //std::string scmd = "(cd " + JPATH + " && ./janus-tx --pset-file ../etc/parameter_sets.csv --pset-id 2 --stream-driver tcp --stream-driver-args connect:127.0.0.1:" + std::to_string(RX_PORT) + " --stream-fs 96000 --verbose 1 --packet-cargo 'fakngay')";
                 //
@@ -503,9 +502,8 @@ namespace janusxsdm
                             perror("read");
                             exit(4);
                         }
-                    default:
-                        janusframe += ch;
-                        
+                    default: //Appending read char to janusframe
+                        janusframe += ch; 
                         break;
                     }
                     
@@ -518,7 +516,7 @@ namespace janusxsdm
                     if(std::chrono::duration<double>(now - start).count() >= timeout.count())
                     {
                         std::cout << "Timeout reached, terminating!\n";
-                        std::cout << "Killing " << jns_pid << " and " << sdm_pid << "\n";
+                        //std::cout << "Killing " << jns_pid << " and " << sdm_pid << "\n";
                         close(fd[0]);
                         kill(jns_pid+1, SIGINT);
                         kill(jns_pid, SIGINT);

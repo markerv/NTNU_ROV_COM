@@ -263,3 +263,4 @@ lib/janus-c-3.0.5/bin/
 librcv
 libsend
 modemSetup
+lib/sdmsh/rxlog.txt
