@@ -22,7 +22,7 @@ using namespace std::chrono_literals;
 int main()
 {
     std::cout << "Setting source level to low and configuring preamble.." << std::endl;
-    janusxsdm::connection modem("192.168.0.189", JANUSPATH, SDMPATH, 9007, 9045); //Constructing a connection object;
+    janusxsdm::connection modem("192.168.0.199", JANUSPATH, SDMPATH, 9007, 9045); //Constructing a connection object;
     modem.sdmconf();
     std::this_thread::sleep_for(1000ms);
     modem.setPreamble();

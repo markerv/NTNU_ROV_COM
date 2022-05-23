@@ -21,16 +21,16 @@ using namespace std::chrono_literals;
 
 int main()
 { 
-    std::cout << "Tester\n";
+    //std::cout << "Tester\n";
     janusxsdm::connection modem("192.168.0.199", JANUSPATH, SDMPATH, 9998, 9955); //Constructing a connection object;
     std::string returnMessage;
+
     while(true)
     {
-        if(modem.listen(returnMessage, 6s))
+        if(modem.listen(returnMessage, 5s))
         {
             std::cout << "Message was: " << returnMessage << std::endl;
-            break;
         }
     }
-    std::cout << "rcv done" << std::endl;
+    //std::cout << "rcv done" << std::endl;
 }

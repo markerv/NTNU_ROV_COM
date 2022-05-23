@@ -29,6 +29,8 @@
 
 #include "janusxsdm.h"
 
+#include <fcntl.h> // library for fcntl function
+
 #define SRV_PORT 9910 
 
 
@@ -390,41 +392,99 @@ namespace janusxsdm
             return 0;
         }
     }
+    int connection::listenR2(std::string &message, std::chrono::duration<double> timeout)
+    {
+        std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
+
+        int fd[2];
+        // fd[0] - Read
+        // fd[1] - Write
+        if(pipe(fd) == -1)
+        {
+            std::cerr << "Failed to open pipe" << std::endl;
+            return 1;
+        }
+
+        pid_t sdm_pid = fork();
+        if(sdm_pid == -1)
+        {
+            perror("fork");
+            exit(1);
+        }
+        else if(sdm_pid == 0) //sdm process
+        {
+            //std::string jcmd = "(cd " + JPATH + " && ./janus-rx  --pset-file ../etc/parameter_sets.csv --pset-id 2 --stream-driver raw --stream-driver-args ../data/janusMessage.raw --stream-fs 250000 --stream-format S16 --verbose 1 2>&1)";
+            std::string scmd = "(cd " + SPATH + " && ./sdmsh " + mIP + " -e 'rx";
+
+        }
+        return 1;
+    }
     int connection::listen(std::string &message, std::chrono::duration<double> timeout)
     {
-        int filedes[2];
-        if(pipe(filedes) == -1) //Creating pipe
+        int fd[2];
+        // 0 - Read
+        // 1 - Write
+
+        if(pipe(fd) == -1) //Error creating pipe
         {
             perror("pipe");
-            exit(1);
+            exit(EXIT_FAILURE);
+        }
+        if (fcntl(fd[0], F_SETFL, O_NONBLOCK) < 0) //Making pipRead non-blocking
+        {
+            exit(2);
         }
 
         pid_t jns_pid = fork(); //Creating suprocess for janus-rx
         if(jns_pid == -1) //Error
         {
             perror("fork");
-            exit(1);
+            exit(EXIT_FAILURE);
         }
         else if(jns_pid == 0) //janus child process
         {
             //std::cout << "Spawned janus child\n";
-            while((dup2(filedes[1], STDOUT_FILENO) == -1) && (errno == EINTR)) {}
-            close(filedes[1]);
-            close(filedes[0]);
-
+            while((dup2(fd[1], STDERR_FILENO) == -1) && (errno == EINTR)) {} //Redirecting stderr to pipe (erroroutput now goes to pipe)
+            close(fd[1]);
+            close(fd[0]);
+            //setpgid(jns_pid, 0);
+            
             char arg1[] = "sh";
             char arg2[] = "-c";
-            std::string jcmd = "(cd " + JPATH + " && ./janus-rx --pset-file ../etc/parameter_sets.csv --pset-id 2 --stream-driver tcp --stream-driver-args listen:127.0.0.1:" + std::to_string(RX_PORT)+" --stream-fs 96000 --verbose 1 2>&1)";
-            //Dummy for testing:
-            //std::string jcmd = "(cd " + JPATH + " && ./janus-rx  --pset-file ../etc/parameter_sets.csv --pset-id 2 --stream-driver raw --stream-driver-args ../data/janusMessage.raw --stream-fs 250000 --stream-format S16 --verbose 1 2>&1)";
-            //
+            std::string jcmd = "(cd " + JPATH + " && ./janus-rx --pset-file ../etc/parameter_sets.csv --pset-id 2 --stream-driver tcp --stream-driver-args listen:127.0.0.1:" + std::to_string(RX_PORT)+" --stream-fs 96000 --verbose 1 --rx-once 1)";
+            
             char* jns_arg[] = {arg1, arg2, (char*)jcmd.c_str(), NULL};
             execvp(jns_arg[0], jns_arg);
+            
+            //This will have janus keep original pidbut pathing gets broken
+            // char *args[16];
+            // std::string arg1 = JPATH + "janus-rx";
+            // std::string arg3 = JPATH + "../etc/parameter_sets.csv";
+            // std::string arg7 = "listen:127.0.0.1:" + std::to_string(RX_PORT);
+
+            // args[0] = (char*)arg1.c_str();
+            // args[1] = "--pset-file";
+            // args[2] = (char*)arg3.c_str();
+            // args[3] = "--pset-id";
+            // args[4] = "2";
+            // args[5] = "--stream-driver";
+            // args[6] = "tcp";
+            // args[7] = "--stream-driver-args";
+            // args[8] = (char*)arg7.c_str();
+            // args[9] = "--stream-fs";
+            // args[10] = "96000";
+            // args[11] = "--verbose";
+            // args[12] = "1";
+            // args[13] = "--rx-once";
+            // args[14] = "1";
+            // args[15] = NULL;
+            // execvp(args[0], args);
             perror("execvp");
-            _exit(1);
+            _exit(EXIT_FAILURE);
         }
         else //Parent process
         {
+            close(fd[1]);
             std::this_thread::sleep_for(500ms); //Delay needed for janus to establish tcp listener
             pid_t sdm_pid = fork();
             if(sdm_pid == -1) //Error
@@ -438,6 +498,10 @@ namespace janusxsdm
                 char arg1[] = "sh";
                 char arg2[] = "-c";
                 std::string scmd = "(cd " + SPATH + " && ./sdmsh " + mIP + " -e 'rx 0 tcp:connect:127.0.0.1:" + std::to_string(RX_PORT) + "')";
+                //Dummy for testing:
+                //std::string scmd = "(cd " + JPATH + " && ./janus-tx --pset-file ../etc/parameter_sets.csv --pset-id 2 --stream-driver tcp --stream-driver-args connect:127.0.0.1:" + std::to_string(RX_PORT) + " --stream-fs 96000 --verbose 1 --packet-cargo 'fakngay')";
+                //
+                //std::this_thread::sleep_for(2s);
                 char* sdm_arg[] = {arg1, arg2, (char*)scmd.c_str(), NULL};
                 execvp(sdm_arg[0], sdm_arg);
                 perror("execvp");
@@ -445,6 +509,71 @@ namespace janusxsdm
             }
             else
             {
+                char ch;
+                std::string janusframe;
+                std::chrono::steady_clock::time_point start, now;
+                start = std::chrono::steady_clock::now();
+
+                while(true)
+                {
+                    int rdstat = read(fd[0], &ch, sizeof(char));
+                    switch (rdstat)
+                    {
+                    case -1:
+                        if(errno == EAGAIN)
+                        {
+                            //printf("Pipe empty\n");
+                            break;
+                        }
+                        else
+                        {
+                            perror("read");
+                            exit(4);
+                        }
+                    default:
+                        janusframe += ch;
+                        
+                        break;
+                    }
+                    
+                    if(janusframe.find("Packet         : Cargo (ASCII)                                :") != std::string::npos)
+                    {
+                        //std::cout << "Found message!";
+                        break;
+                    }
+                    now = std::chrono::steady_clock::now();
+                    if(std::chrono::duration<double>(now - start).count() >= timeout.count())
+                    {
+                        std::cout << "Timeout reached, terminating!\n";
+                        std::cout << "Killing " << jns_pid << " and " << sdm_pid << "\n";
+                        close(fd[0]);
+                        kill(jns_pid+1, SIGINT);
+                        kill(jns_pid, SIGINT);
+                        kill(sdm_pid+1, SIGINT);
+                        kill(sdm_pid, SIGINT);
+                        return 0;
+                    }
+                }
+                //std::cout << janusframe << std::endl;
+                close(fd[0]);
+                kill(jns_pid, SIGINT);
+                kill(jns_pid+1, SIGINT);
+                kill(sdm_pid, SIGINT);
+                //std::string idStr = "Packet         : Cargo (ASCII)                                : \"";
+                std::string idStr = "Packet         :   Payload                                    : ";
+                std::string endStr = "\n";
+
+                size_t spos = janusframe.find(idStr) + idStr.length();
+                //std::cout << "Cargo found in " << spos << std::endl;
+
+                size_t epos = janusframe.find(endStr, spos);
+
+                std::string cargo = janusframe.substr(spos, epos-spos);
+                //std::cout << "Cargo is: " << cargo << std::endl;
+
+                message = cargo; //Writing cargo to message argument
+                return 1;
+                /*
                 pid_t rd_pid = fork();
                 if(rd_pid == -1) //Error
                 {
@@ -456,7 +585,7 @@ namespace janusxsdm
                     char buffer[2048];
                     ssize_t count;
                     std::string janusFrame;
-                    while(true) //While janus child process is "alive"
+                    while(true)
                     {
                         if(janusFrame.find("Packet         :   Payload                                    :") != std::string::npos) //To catch EOF before read blocks
                         {
@@ -557,6 +686,7 @@ namespace janusxsdm
                         
                     }
                 }
+                */
             }
             return 0;
         }
