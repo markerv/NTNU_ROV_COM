@@ -515,7 +515,7 @@ namespace janusxsdm
                     now = std::chrono::steady_clock::now();
                     if(std::chrono::duration<double>(now - start).count() >= timeout.count())
                     {
-                        std::cout << "Timeout reached, terminating!\n";
+                        std::cout << "listener: Timeout reached, terminating!\n";
                         //std::cout << "Killing " << jns_pid << " and " << sdm_pid << "\n";
                         close(fd[0]);
                         kill(jns_pid+1, SIGINT);
