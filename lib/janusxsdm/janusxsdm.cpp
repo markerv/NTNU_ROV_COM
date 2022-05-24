@@ -59,6 +59,66 @@ namespace janusxsdm
         std::cout << "Modem with IP: " << mIP << " configured." << std::endl;
         return 1;
     }
+    int connection::sdmconfDialogue()
+    {
+        //Could also add setting modem in "PHY" state here (nc $IP PORT +++ATP)
+        std::string input, sdmcommand, sfty = "n";
+        std::cout << "Choose source level:\n 3 - 20dB (min)\n 2 - -12dB\n 1 - -6dB \n 0 - 0dB (max)\n Warning chosing a source level higher than -20dB is not recomended when testing in air as it might destroy the modems.\n";
+        std::cin >> input;
+
+        //std::cout << "Your answer was: " << input;
+        int num = stoi(input);
+        
+        switch (num)
+        {
+        case 0:
+            std::cout << "Warning! This setting is unsuitable for testing in air, are you sure? [y/n]\n";
+            std::cin >> sfty;
+            if(sfty == "y" || sfty == "yes"){
+                sdmcommand = "(cd " + SPATH + " && ./sdmsh " + mIP + " -e 'stop;config 30 0 0 0')";
+            }
+            else{
+                sdmcommand = "(cd " + SPATH + " && ./sdmsh " + mIP + " -e 'stop;config 30 0 3 0')";
+            }
+            break;
+
+        case 1:
+            std::cout << "Warning! This setting is unsuitable for testing in air, are you sure? [y/n]\n";
+            std::cin >> sfty;
+            if(sfty == "y" || sfty == "yes"){
+                sdmcommand = "(cd " + SPATH + " && ./sdmsh " + mIP + " -e 'stop;config 30 0 1 0')";
+            }
+            else{
+                sdmcommand = "(cd " + SPATH + " && ./sdmsh " + mIP + " -e 'stop;config 30 0 3 0')";
+            }
+            break;
+        
+        case 2:
+            std::cout << "Warning! This setting is unsuitable for testing in air, are you sure? [y/n]\n";
+            std::cin >> sfty;
+            if(sfty == "y" || sfty == "yes"){
+                sdmcommand = "(cd " + SPATH + " && ./sdmsh " + mIP + " -e 'stop;config 30 0 2 0')";
+            }
+            else{
+                sdmcommand = "(cd " + SPATH + " && ./sdmsh " + mIP + " -e 'stop;config 30 0 3 0')";
+            }
+            break;
+        
+        case 3:
+            sdmcommand = "(cd " + SPATH + " && ./sdmsh " + mIP + " -e 'stop;config 30 0 3 0')";
+            break;
+        
+        default:
+            std::cout << "Invalid configuration setting default value";
+            sdmcommand = "(cd " + SPATH + " && ./sdmsh " + mIP + " -e 'stop;config 30 0 3 0')";
+            break;
+        }
+        std::cout << sdmcommand << std::endl;
+        FILE* terminal = popen(sdmcommand.c_str(), "r");
+        pclose(terminal);
+        std::cout << "Modem with IP: " << mIP << " configured." << std::endl;
+        return 1;
+    }
     int connection::setPreamble()
     {
         std::string sdmcommand = "(cd " + SPATH + " && ./sdmsh " + mIP + " -e 'stop;ref preamble.raw')";

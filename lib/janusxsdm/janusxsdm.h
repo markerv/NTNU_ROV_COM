@@ -24,6 +24,9 @@ namespace janusxsdm
         //Setting correct config on sdm
         int sdmconf();
 
+        //Setting custom config on sdm
+        int sdmconfDialogue();
+
         //Sets the correct preamble for janus-data
         int setPreamble();
 
