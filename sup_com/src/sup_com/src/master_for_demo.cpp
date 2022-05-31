@@ -70,7 +70,7 @@ int janus_rx(int timeOut_interval){                          //Reception from JA
 }
 
 int main(){
-    modem.sdmconf();
+    modem.sdmconfDialogue();
     std::this_thread::sleep_for(500ms);        //Mainly for debugging
     modem.setPreamble();
     std::this_thread::sleep_for(500ms);
