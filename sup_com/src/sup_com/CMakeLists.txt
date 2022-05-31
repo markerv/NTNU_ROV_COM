@@ -34,7 +34,7 @@ install(TARGETS
   nodeTalker
   DESTINATION lib/${PROJECT_NAME})
 
-add_executable(masterListener src/sub_to_slave.cpp)
+add_executable(masterListener src/sub_to_master.cpp)
 ament_target_dependencies(masterListener rclcpp std_msgs)
 
 install(TARGETS
