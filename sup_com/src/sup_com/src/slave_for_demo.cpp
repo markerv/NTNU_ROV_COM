@@ -67,7 +67,7 @@ int janus_tx(string data){
 }
 
 int init(){
-    modem.sdmconf();
+    modem.sdmconfDialogue();
     std::this_thread::sleep_for(500ms);        //Mainly for debugging
     modem.setPreamble();
     std::this_thread::sleep_for(500ms); 
