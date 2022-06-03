@@ -3,6 +3,8 @@ This is a collection of code used in a NTNU bachelors-thesis where the goal was 
 
 The solution uses the JANUS protocol as a universal language allowing for integration of modems from differing manufacturers. The original implementation was done with Evologics 18-34 USBL modems.
 
+The folder "sup_com" includes an implementation of ROS 2 for underwater testing of the library. 
+
 ## Requirements
 The solution requires some libraries to function propperly:
 
@@ -52,6 +54,19 @@ sudo make install
 The main code sould be checked to make sure that the modem IP is correct before compilation.
 
 The executables were built induvidually using the compiler in visual studio. Parameters for the compilation process can be found in ".vscode/task.json"
+
+### ROS 2
+Usage of the ROS 2-implementation assumes that the device has ROS 2 Galactic installed. This can be installed on Ubuntu-based systems through debian packages from https://docs.ros.org/en/galactic/Installation/Ubuntu-Install-Debians.html 
+
+For building the library:
+```bash
+. /opt/ros/galactic/setup.bash
+cd NTNU_ROV_COM/sup_com/src
+. install/setup.bash
+colcon build
+```
+
+It includes the nodes talker, listener, slaveTalker, masterListener. Further functionality is described in the manual "Manual for testing".
 
 ## Setup
 
