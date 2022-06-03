@@ -58,7 +58,7 @@ The executables were built induvidually using the compiler in visual studio. Par
 ### ROS 2
 Usage of the ROS 2-implementation assumes that the device has ROS 2 Galactic installed. This can be installed on Ubuntu-based systems through debian packages from https://docs.ros.org/en/galactic/Installation/Ubuntu-Install-Debians.html 
 
-For building the library:
+Library must be built before being usable on the device. For building the library:
 ```bash
 . /opt/ros/galactic/setup.bash
 cd NTNU_ROV_COM/sup_com/src
@@ -66,7 +66,7 @@ cd NTNU_ROV_COM/sup_com/src
 colcon build
 ```
 
-It includes the nodes talker, listener, slaveTalker, masterListener. Further functionality is described in the manual "Manual for testing".
+It includes the nodes talker, listener, slaveTalker, masterListener. Further functionality and guides is described in the manual "Manual for testing".
 
 ## Setup
 
